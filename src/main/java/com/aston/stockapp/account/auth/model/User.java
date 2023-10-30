@@ -25,7 +25,7 @@ public class User {
     @Column(name = "UserID")
     private Long id;
 
-    @Column(name = "UserName", nullable = false)
+    @Column(name = "Username", nullable = false, unique = true)
     private String username;
 
     @Column(name = "Password", nullable = false)
@@ -33,11 +33,11 @@ public class User {
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
-            name = "user_roles",
-            joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "role_id")
+            name = "User_Roles",
+            joinColumns = @JoinColumn(name = "UserID"),
+            inverseJoinColumns = @JoinColumn(name = "RoleID")
     )
-    private Set<AuthRole> roles;
+    private Set<Role> roles;
 
     @JsonDeserialize(using = PasswordEncoderDeserializer.class)
     public void setPassword(String password) { this.password = password; }

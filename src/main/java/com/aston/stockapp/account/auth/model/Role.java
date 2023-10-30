@@ -4,11 +4,12 @@ import javax.persistence.*;
 import java.util.Set;
 
 @Entity
-@Table(name = "AuthRole")
-public class AuthRole {
+@Table(name = "Role")
+public class Role {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "RoleID")
     private Long id;
 
     @Enumerated(EnumType.STRING)

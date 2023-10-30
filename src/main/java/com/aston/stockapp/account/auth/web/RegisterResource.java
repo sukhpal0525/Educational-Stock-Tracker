@@ -7,10 +7,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 
 @Controller
 public class RegisterResource {
-
-    @GetMapping("/register")
-    public String showRegisterForm(Model model) {
-        model.addAttribute("user", new User());
-        return "signup_form";
-    }
+//
+//    @GetMapping("/register")
+//    public String showRegisterForm(Model model) {
+//        model.addAttribute("user", new User());
+//        return "register";
+//    }
 }
