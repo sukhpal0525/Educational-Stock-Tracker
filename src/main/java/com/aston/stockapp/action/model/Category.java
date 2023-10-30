@@ -1,6 +1,6 @@
 package com.aston.stockapp.action.model;
 
-public enum ActionType {
+public enum Category {
     STOCK_TRANSACTION,
     DIVIDEND,
     DISTRIBUTION,
