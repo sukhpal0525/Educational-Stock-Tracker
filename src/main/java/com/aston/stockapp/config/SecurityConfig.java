@@ -1,5 +1,6 @@
 package com.aston.stockapp.config;
 
+import com.aston.stockapp.api.YahooResponseConverter;
 import com.aston.stockapp.user.repository.UserRepository;
 import com.aston.stockapp.user.service.CustomUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,9 +17,6 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    @Autowired
-    private UserRepository userRepository;
-
     @Bean
     public UserDetailsService userDetailsService() {
         return new CustomUserDetailsService();
@@ -32,19 +30,32 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            .authorizeRequests()
-                .antMatchers("/", "/index", "/login", "/register").permitAll() // Ensure '/register' is accessible
-                .anyRequest().authenticated()
+                .authorizeRequests()
+                .anyRequest().permitAll()
                 .and()
-            .formLogin()
+                .formLogin()
                 .loginPage("/login")
                 .failureUrl("/login?error=true")
                 .defaultSuccessUrl("/index", true)
                 .failureUrl("/login?error=true")
                 .permitAll()
                 .and()
-            .logout()
+                .logout()
                 .permitAll();
+
+//            .authorizeRequests()
+//                .antMatchers("/", "/index", "/login", "/register").permitAll()
+//                .anyRequest().authenticated()
+//                .and()
+//            .formLogin()
+//                .loginPage("/login")
+//                .failureUrl("/login?error=true")
+//                .defaultSuccessUrl("/index", true)
+//                .failureUrl("/login?error=true")
+//                .permitAll()
+//                .and()
+//            .logout()
+//                .permitAll();
 
         return http.build();
     }
