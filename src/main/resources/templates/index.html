@@ -1,34 +1,16 @@
 <!DOCTYPE html>
+<html lang="en">
 <head>
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Index Page</title>
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
 </head>
-<html>
 <body>
-
-<h2>Register Form</h2>
-<form method="POST" id="registerForm">
-  <label for="emailR">Email:</label><br>
-  <input type="text" id="emailR" name="email" value="test@test.com"><br>
-  <label for="passwordR">Password:</label><br>
-  <input type="password" id="passwordR" name="password" value="test"><br><br>
-  <input type="submit" value="Submit">
-</form>
-<br/>
-<br/>
-<h2>Login Form</h2>
-<form method="POST" id="loginForm">
-  <label for="email">Email:</label><br>
-  <input type="text" id="email" name="email" value="test@test.com"><br>
-  <label for="password">Password:</label><br>
-  <input type="password" id="password" name="password" value="test"><br><br>
-  <input type="submit" value="Submit">
-</form>
-
-
-<p>If you click the "Submit" button, the form-data will be sent to a page called "/action_page.php".</p>
-
-<h3>Response</h3>
-<p id="response"></p>
+<div class="container mt-5">
+  <h1>Welcome to the Application</h1>
+  <a href="/login" class="btn btn-primary">Login</a>
+  <a href="/register" class="btn btn-secondary">Register</a>
+</div>
 </body>
-<script src="./script.js"></script>
 </html>
