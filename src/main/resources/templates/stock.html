@@ -16,6 +16,13 @@
         <th>Ticker</th>
         <th>Name</th>
         <th>Price</th>
+        <th>Exchange</th>
+        <th>Volume</th>
+        <th>Day High</th>
+        <th>Day Low</th>
+        <th>Market Cap</th>
+        <th>Tradable</th>
+        <th>Change</th>
     </tr>
     </thead>
     <tbody>
@@ -23,6 +30,13 @@
         <td th:text="${stock.ticker}"></td>
         <td th:text="${stock.name}"></td>
         <td th:text="'$' + ${stock.price}"></td>
+        <td th:text="${stock.fullExchangeName}"></td>
+        <td th:text="'$' + ${stock.regularMarketVolume}"></td>
+        <td th:text="'$' + ${stock.regularMarketDayHigh}"></td>
+        <td th:text="'$' + ${stock.regularMarketDayLow}"></td>
+        <td th:text="'$' + ${stock.marketCap}"></td>
+        <td th:text="${stock.tradeable} ? 'Yes' : 'No'"></td>
+        <td th:text="${stock.regularMarketChangePercent} + '%'"></td>
     </tr>
     </tbody>
 </table>

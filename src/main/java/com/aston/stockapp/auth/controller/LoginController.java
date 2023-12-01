@@ -17,12 +17,6 @@ import java.util.Optional;
 @RequestMapping("/login")
 public class LoginController {
 
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
     @GetMapping
     public String login(Model model, @RequestParam Optional<String> error, @RequestParam Optional<String> logout) {
         model.addAttribute("user", new User());

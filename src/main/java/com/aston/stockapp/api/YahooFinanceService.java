@@ -24,6 +24,20 @@ public class YahooFinanceService {
         this.restTemplate = new RestTemplate();
     }
 
+
+    public void fetchTrendingTickers() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("X-RapidAPI-Key", "f9c5bc36d9mshef13f8f9db483efp19d8cdjsn72b3775c848f");
+        headers.set("X-RapidAPI-Host", "apidojo-yahoo-finance-v1.p.rapidapi.com");
+        HttpEntity<String> entity = new HttpEntity<>(null, headers);
+
+        String url = "https://apidojo-yahoo-finance-v1.p.rapidapi.com/market/get-trending-tickers";
+
+        ResponseEntity<String> responseStr = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
+        log.info("Response: {}", responseStr.getBody());
+    }
+
+
     public Stock fetchStockData(String symbol) {
         HttpHeaders headers = new HttpHeaders();
         headers.set("X-RapidAPI-Key", "f9c5bc36d9mshef13f8f9db483efp19d8cdjsn72b3775c848f");
@@ -35,9 +49,21 @@ public class YahooFinanceService {
         ResponseEntity<String> responseStr = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
         YahooFinanceResponse jsonResponse = converter.convert(responseStr.getBody());
 
-        return new Stock(symbol, jsonResponse.getLongName(), BigDecimal.valueOf(jsonResponse.getRegularMarketPrice()));
+        return new Stock(
+                symbol,
+                jsonResponse.getLongName(),
+                BigDecimal.valueOf(jsonResponse.getRegularMarketPrice()),
+                jsonResponse.getFullExchangeName(),
+                jsonResponse.getRegularMarketVolume(),
+                BigDecimal.valueOf(jsonResponse.getRegularMarketDayHigh()),
+                BigDecimal.valueOf(jsonResponse.getRegularMarketDayLow()),
+                BigDecimal.valueOf(jsonResponse.getMarketCap()),
+                jsonResponse.isTradeable(),
+                BigDecimal.valueOf(jsonResponse.getRegularMarketChangePercent())
+        );
     }
 }
+
 
 
 

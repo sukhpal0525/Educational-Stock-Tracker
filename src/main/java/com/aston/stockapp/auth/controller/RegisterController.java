@@ -42,14 +42,4 @@ public class RegisterController {
         redirectAttrs.addFlashAttribute("successMsg", "Registration successful. Please login.");
         return "redirect:/login";
     }
-
-//    @PostMapping
-//    public String register(User user, RedirectAttributes redirectAttrs) {
-//        String password = passwordEncoder.encode(user.getPassword());
-//        user.setPassword(password);
-//        userRepository.save(user);
-//        redirectAttrs.addFlashAttribute("successMsg", "Registration successful.");
-//
-//        return "redirect:/register";
-//    }
 }
