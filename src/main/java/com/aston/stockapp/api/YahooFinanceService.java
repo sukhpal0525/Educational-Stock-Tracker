@@ -59,7 +59,32 @@ public class YahooFinanceService {
                 BigDecimal.valueOf(jsonResponse.getRegularMarketDayLow()),
                 BigDecimal.valueOf(jsonResponse.getMarketCap()),
                 jsonResponse.isTradeable(),
-                BigDecimal.valueOf(jsonResponse.getRegularMarketChangePercent())
+                BigDecimal.valueOf(jsonResponse.getRegularMarketChangePercent()),
+                jsonResponse.getPreMarketChange(),
+                jsonResponse.getPreMarketChangePercent(),
+                jsonResponse.getPreMarketPrice(),
+                jsonResponse.getPreMarketTime(),
+                jsonResponse.getPostMarketChange(),
+                jsonResponse.getPostMarketChangePercent(),
+                jsonResponse.getPostMarketPrice(),
+                jsonResponse.getPostMarketTime(),
+                jsonResponse.getCurrency(),
+                jsonResponse.getMarketState(),
+                jsonResponse.getBid(),
+                jsonResponse.getAsk(),
+                jsonResponse.getBidSize(),
+                jsonResponse.getAskSize(),
+                jsonResponse.getFiftyTwoWeekLow(),
+                jsonResponse.getFiftyTwoWeekHigh(),
+                jsonResponse.getTrailingPE(),
+                jsonResponse.getDividendYield(),
+                jsonResponse.getEpsTrailingTwelveMonths(),
+                jsonResponse.getBookValue(),
+                jsonResponse.getFiftyDayAverage(),
+                jsonResponse.getTwoHundredDayAverage(),
+                jsonResponse.getSharesOutstanding(),
+                jsonResponse.getForwardPE(),
+                jsonResponse.getPriceToBook()
         );
     }
 }
