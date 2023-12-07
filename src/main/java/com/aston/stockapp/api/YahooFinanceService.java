@@ -24,6 +24,20 @@ public class YahooFinanceService {
         this.restTemplate = new RestTemplate();
     }
 
+//    public List<HistoricalPrice> fetchHistoricalStockData(String symbol) {
+//        HttpHeaders headers = new HttpHeaders();
+//        headers.set("X-RapidAPI-Key", "f9c5bc36d9mshef13f8f9db483efp19d8cdjsn72b3775c848f");
+//        headers.set("X-RapidAPI-Host", "yahoo-finance15.p.rapidapi.com");
+//        HttpEntity<String> entity = new HttpEntity<>("parameters", headers);
+//
+//        String url = API_URL + "/v3/get-historical-data" + symbol;
+//
+//        ResponseEntity<String> responseStr = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
+//        YahooFinanceResponse jsonResponse = converter.convert(responseStr.getBody());
+//        log.info("Response: {}", responseStr.getBody());
+//
+//        return null;
+//    }
 
     public void fetchTrendingTickers() {
         HttpHeaders headers = new HttpHeaders();
@@ -36,7 +50,6 @@ public class YahooFinanceService {
         ResponseEntity<String> responseStr = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
         log.info("Response: {}", responseStr.getBody());
     }
-
 
     public Stock fetchStockData(String symbol) {
         HttpHeaders headers = new HttpHeaders();
@@ -54,6 +67,7 @@ public class YahooFinanceService {
                 jsonResponse.getLongName(),
                 BigDecimal.valueOf(jsonResponse.getRegularMarketPrice()),
                 jsonResponse.getFullExchangeName(),
+                jsonResponse.getExchange(),
                 jsonResponse.getRegularMarketVolume(),
                 BigDecimal.valueOf(jsonResponse.getRegularMarketDayHigh()),
                 BigDecimal.valueOf(jsonResponse.getRegularMarketDayLow()),
@@ -84,7 +98,8 @@ public class YahooFinanceService {
                 jsonResponse.getTwoHundredDayAverage(),
                 jsonResponse.getSharesOutstanding(),
                 jsonResponse.getForwardPE(),
-                jsonResponse.getPriceToBook()
+                jsonResponse.getPriceToBook(),
+                Integer.valueOf(jsonResponse.getPriceHint())
         );
     }
 }

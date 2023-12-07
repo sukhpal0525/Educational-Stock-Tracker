@@ -14,15 +14,15 @@ public class YahooFinanceController {
 
     private final YahooFinanceService yahooFinanceService;
 
+    @Autowired
+    public YahooFinanceController(YahooFinanceService yahooFinanceService) {
+        this.yahooFinanceService = yahooFinanceService;
+    }
+
     @GetMapping("/{symbol}")
     public String getStockData(@PathVariable String symbol, Model model) {
         Stock stock = yahooFinanceService.fetchStockData(symbol);
         model.addAttribute("stock", stock);
         return "stock";
-    }
-
-    @Autowired
-    public YahooFinanceController(YahooFinanceService yahooFinanceService) {
-        this.yahooFinanceService = yahooFinanceService;
     }
 }

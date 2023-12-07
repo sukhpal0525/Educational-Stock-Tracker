@@ -13,6 +13,7 @@ public class Stock {
     private String name;
     private BigDecimal price;
     private String fullExchangeName;
+    private String exchange;
     private long regularMarketVolume;
     private BigDecimal regularMarketDayHigh;
     private BigDecimal regularMarketDayLow;
@@ -45,12 +46,14 @@ public class Stock {
     private long sharesOutstanding;
     private double forwardPE;
     private double priceToBook;
+    private int priceHint;
 
-    public Stock(String ticker, String name, BigDecimal price, String fullExchangeName, long regularMarketVolume, BigDecimal regularMarketDayHigh, BigDecimal regularMarketDayLow, BigDecimal marketCap, boolean tradeable, BigDecimal regularMarketChangePercent, double preMarketChange, double preMarketChangePercent, double preMarketPrice, String preMarketTime, String postMarketChange, double postMarketChangePercent, double postMarketPrice, String postMarketTime, String currency, String marketState, double bid, double ask, int bidSize, int askSize, double fiftyTwoWeekLow, double fiftyTwoWeekHigh, double trailingPE, double dividendYield, double epsTrailingTwelveMonths, double bookValue, double fiftyDayAverage, double twoHundredDayAverage, long sharesOutstanding, double forwardPE, double priceToBook) {
+    public Stock(String ticker, String name, BigDecimal price, String fullExchangeName, String exchange, long regularMarketVolume, BigDecimal regularMarketDayHigh, BigDecimal regularMarketDayLow, BigDecimal marketCap, boolean tradeable, BigDecimal regularMarketChangePercent, double preMarketChange, double preMarketChangePercent, double preMarketPrice, String preMarketTime, String postMarketChange, double postMarketChangePercent, double postMarketPrice, String postMarketTime, String currency, String marketState, double bid, double ask, int bidSize, int askSize, double fiftyTwoWeekLow, double fiftyTwoWeekHigh, double trailingPE, double dividendYield, double epsTrailingTwelveMonths, double bookValue, double fiftyDayAverage, double twoHundredDayAverage, long sharesOutstanding, double forwardPE, double priceToBook, int priceHint) {
         this.ticker = ticker;
         this.name = name;
         this.price = price;
         this.fullExchangeName = fullExchangeName;
+        this.exchange = exchange;
         this.regularMarketVolume = regularMarketVolume;
         this.regularMarketDayHigh = regularMarketDayHigh;
         this.regularMarketDayLow = regularMarketDayLow;
@@ -82,5 +85,6 @@ public class Stock {
         this.sharesOutstanding = sharesOutstanding;
         this.forwardPE = forwardPE;
         this.priceToBook = priceToBook;
+        this.priceHint = priceHint;
     }
 }
