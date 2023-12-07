@@ -1,44 +1,132 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
-
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stock Data</title>
-    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <title>Stock Overview</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        .full-height {
+            min-height: 100vh;
+        }
+        .wide-container {
+            max-width: 60%;
+        }
+        .large-spacing {
+            margin-top: 80px;
+        }
+    </style>
 </head>
 
-<body>
-<h1>Stock Information</h1>
-<table class="table">
-    <thead>
-    <tr>
-        <th>Ticker</th>
-        <th>Name</th>
-        <th>Price</th>
-        <th>Exchange</th>
-        <th>Volume</th>
-        <th>Day High</th>
-        <th>Day Low</th>
-        <th>Market Cap</th>
-        <th>Tradable</th>
-        <th>Change</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr>
-        <td th:text="${stock.ticker}"></td>
-        <td th:text="${stock.name}"></td>
-        <td th:text="'$' + ${stock.price}"></td>
-        <td th:text="${stock.fullExchangeName}"></td>
-        <td th:text="'$' + ${stock.regularMarketVolume}"></td>
-        <td th:text="'$' + ${stock.regularMarketDayHigh}"></td>
-        <td th:text="'$' + ${stock.regularMarketDayLow}"></td>
-        <td th:text="'$' + ${stock.marketCap}"></td>
-        <td th:text="${stock.tradeable} ? 'Yes' : 'No'"></td>
-        <td th:text="${stock.regularMarketChangePercent} + '%'"></td>
-    </tr>
-    </tbody>
-</table>
+<body class="d-flex align-items-center justify-content-center" style="background-color: #f8f9fa;"> <!-- Grey background -->
+<div class="container bg-white wide-container full-height"> <!-- Full height container white -->
+
+    <!-- First card row -->
+    <div class="row align-items-stretch mt-5">
+        <!-- Large Card -->
+        <div class="col-md-8 d-flex">
+            <div class="card border-secondary w-100">
+                <div class="card-body text-dark">
+                    <h4 class="card-title" th:text="${stock.name} + ' (' + ${stock.ticker} + ')'"></h4>
+                    <small class="text-muted" th:text="${stock.fullExchangeName}"></small>
+                    <hr>
+                    <p class="card-text">Text</p>
+                </div>
+            </div>
+        </div>
+        <!-- Narrow Card -->
+        <div class="col-md-4 d-flex">
+            <div class="card border-secondary w-100">
+                <h6 class="card-header">Performance</h6>
+                <div class="card-body text-dark">
+                    <table class="table">
+                        <tbody>
+                        <tr>
+                            <td>Price:</td>
+                            <td>
+                                <span class="border-0" th:text="'$' + ${stock.price}"></span>
+                                <span th:if="${stock.regularMarketChangePercent >= 0}"
+                                      th:text="' (' + ${#numbers.formatDecimal(stock.regularMarketChangePercent, 1, 'COMMA', 2, 'POINT')} + '%)'"
+                                      class="text-success border-0"></span>
+                                <span th:if="${stock.regularMarketChangePercent < 0}"
+                                      th:text="' (' + ${#numbers.formatDecimal(stock.regularMarketChangePercent, 1, 'COMMA', 2, 'POINT')} + '%)'"
+                                      class="text-danger border-0"></span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>High (24 Hour):</td>
+                            <td th:text="'$' + ${#numbers.formatDecimal(stock.regularMarketDayHigh, 1, 'COMMA', 2, 'POINT')}"></td>
+                        </tr>
+                        <tr>
+                            <td>Low (24 Hour):</td>
+                            <td th:text="'$' + ${#numbers.formatDecimal(stock.regularMarketDayLow, 1, 'COMMA', 2, 'POINT')}"></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Large custom spacer -->
+    <div class="large-spacing"></div>
+
+    <!-- Second card row -->
+    <div class="row align-items-stretch">
+        <!-- Large Card -->
+        <div class="col-md-8 d-flex">
+            <div class="card border-secondary w-100">
+                <div class="card-body text-dark">
+                    <h5 class="card-title">Price History</h5>
+                </div>
+            </div>
+        </div>
+        <!-- Narrow Card -->
+        <div class="col-md-4 d-flex">
+            <div class="card border-secondary w-100">
+                <h6 class="card-header">Stock Details</h6>
+                <div class="card-body text-dark d-flex align-items-center justify-content-center">
+                    <table class="table">
+                        <tbody>
+                        <tr>
+                            <td class="border-0">Ticker:</td>
+                            <td class="border-0" th:text="${stock.ticker}"></td>
+                        </tr>
+                        <tr>
+                            <td class="">Volume:</td>
+                            <td th:text="'$' + ${#numbers.formatDecimal(stock.regularMarketVolume, 0, 'COMMA', 0, 'NONE')}"></td>
+                        </tr>
+                        <tr>
+                            <td class="">Market Cap:</td>
+                            <td th:text="'$' + ${#numbers.formatDecimal(stock.marketCap, 0, 'COMMA', 0, 'NONE')}"></td>
+                        </tr>
+                        <tr>
+                            <td class="">Tradable:</td>
+                            <td th:text="${stock.tradeable} ? 'Yes' : 'No'"></td>
+                        </tr>
+                        <tr>
+                            <td class="">Price Hint:</td>
+                            <td th:text="${stock.priceHint}"></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Large custom spacer -->
+    <div class="large-spacing"></div>
+
+    <div class="d-flex align-items-center justify-content-center">
+        <form th:action="@{/portfolio/add}" method="post">
+            <input type="hidden" name="symbol" th:value="${stock.ticker}" />
+            <input type="number" name="quantity" class="form-control" placeholder="Quantity" required />
+            <button type="submit" class="btn btn-primary">Add to Portfolio</button>
+        </form>
+    </div>
+</div>
+
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 </html>
