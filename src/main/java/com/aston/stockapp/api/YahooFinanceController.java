@@ -1,6 +1,5 @@
 package com.aston.stockapp.api;
 
-import com.aston.stockapp.domain.asset.Stock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -21,7 +20,7 @@ public class YahooFinanceController {
 
     @GetMapping("/{symbol}")
     public String getStockData(@PathVariable String symbol, Model model) {
-        Stock stock = yahooFinanceService.fetchStockData(symbol);
+        YahooStock stock = yahooFinanceService.fetchStockData(symbol);
         model.addAttribute("stock", stock);
         return "stock";
     }

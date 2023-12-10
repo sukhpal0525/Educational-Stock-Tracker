@@ -2,16 +2,13 @@ package com.aston.stockapp.auth.service;
 
 import com.aston.stockapp.user.User;
 import com.aston.stockapp.user.repository.UserRepository;
-import com.aston.stockapp.user.service.UserService;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 public class AuthService {
 
-    private UserService userService;
     private UserRepository userRepository;
 
     public String register(User user, BindingResult result, RedirectAttributes redirectAttrs) {

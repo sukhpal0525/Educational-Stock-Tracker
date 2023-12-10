@@ -1,6 +1,5 @@
 package com.aston.stockapp.api;
 
-import com.aston.stockapp.domain.asset.Stock;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
@@ -51,7 +50,7 @@ public class YahooFinanceService {
         log.info("Response: {}", responseStr.getBody());
     }
 
-    public Stock fetchStockData(String symbol) {
+    public YahooStock fetchStockData(String symbol) {
         HttpHeaders headers = new HttpHeaders();
         headers.set("X-RapidAPI-Key", "f9c5bc36d9mshef13f8f9db483efp19d8cdjsn72b3775c848f");
         headers.set("X-RapidAPI-Host", "yahoo-finance15.p.rapidapi.com");
@@ -62,7 +61,7 @@ public class YahooFinanceService {
         ResponseEntity<String> responseStr = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
         YahooFinanceResponse jsonResponse = converter.convert(responseStr.getBody());
 
-        return new Stock(
+        return new YahooStock(
                 symbol,
                 jsonResponse.getLongName(),
                 BigDecimal.valueOf(jsonResponse.getRegularMarketPrice()),
