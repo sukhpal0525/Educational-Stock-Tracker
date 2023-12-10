@@ -17,7 +17,7 @@ public class PortfolioController {
     @GetMapping("/portfolio")
     public String viewPortfolio(Model model) {
         // Fetch portfolio for the logged in user and add to model
-        Portfolio portfolio = portfolioService.getPortfolioForCurrentUser();
+        Portfolio portfolio = portfolioService.getPortfolio();
         model.addAttribute("portfolio", portfolio.getItems());
         return "portfolio";
     }
