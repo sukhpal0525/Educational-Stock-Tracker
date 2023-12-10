@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Overview</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        .full-height {
+            min-height: 100vh;
+        }
+        .wide-container {
+            max-width: 60%;
+        }
+        .large-spacing {
+            margin-top: 80px;
+        }
+    </style>
+</head>
+
+<body class="d-flex align-items-center justify-content-center" style="background-color: #f8f9fa;"> <!-- Grey background -->
+<div class="container bg-white wide-container full-height"> <!-- Full height container white -->
+
+    <!-- First card row -->
+    <div class="row align-items-stretch mt-5">
+        <!-- Large Card -->
+        <div class="col-md-8 d-flex">
+            <div class="card border-secondary w-100">
+                <div class="card-body text-dark">
+                    <h4 class="card-title">My Portfolio</h4>
+                    <small class="text-muted"></small>
+                    <hr>
+                    <table class="table">
+                        <thead>
+                        <tr>
+                            <th>Stock</th>
+                            <th>Quantity</th>
+                            <th>Current Price</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="item : ${portfolio}">
+                            <td th:text="${item.stock.name}">Stock Name</td>
+                            <td th:text="${item.quantity}">Quantity</td>
+                            <td th:text="'$' + ${item.stock.currentPrice}">Current Price</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <!-- Narrow Card -->
+        <div class="col-md-4 d-flex">
+            <div class="card border-secondary w-100">
+                <h6 class="card-header">Performance</h6>
+                <div class="card-body text-dark">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Large custom spacer -->
+    <div class="large-spacing"></div>
+
+    <!-- Second card row -->
+    <div class="row align-items-stretch">
+        <!-- Large Card -->
+        <div class="col-md-8 d-flex">
+            <div class="card border-secondary w-100">
+                <div class="card-body text-dark">
+                    <h5 class="card-title">Price History</h5>
+                </div>
+            </div>
+        </div>
+        <!-- Narrow Card -->
+        <div class="col-md-4 d-flex">
+            <div class="card border-secondary w-100">
+                <h6 class="card-header">Stock Details</h6>
+                <div class="card-body text-dark d-flex align-items-center justify-content-center">
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

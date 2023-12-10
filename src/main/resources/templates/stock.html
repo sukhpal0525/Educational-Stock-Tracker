@@ -118,12 +118,18 @@
     <!-- Large custom spacer -->
     <div class="large-spacing"></div>
 
-    <div class="d-flex align-items-center justify-content-center">
-        <form th:action="@{/portfolio/add}" method="post">
-            <input type="hidden" name="symbol" th:value="${stock.ticker}" />
-            <input type="number" name="quantity" class="form-control" placeholder="Quantity" required />
-            <button type="submit" class="btn btn-primary">Add to Portfolio</button>
-        </form>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-auto">
+                <form th:action="@{/portfolio/add}" method="post" class="form-inline justify-content-center">
+                    <input type="hidden" name="symbol" th:value="${stock.ticker}" />
+                    <div class="form-group mx-sm-3 mb-2">
+                        <input type="number" name="quantity" class="form-control" placeholder="Quantity" required />
+                    </div>
+                    <button type="submit" class="btn btn-primary mb-2">Add to Portfolio</button>
+                </form>
+            </div>
+        </div>
     </div>
 </div>
 
