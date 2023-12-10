@@ -19,10 +19,6 @@ public class CustomUserDetailsService implements UserDetailsService {
     @Autowired
     private UserRepository userRepository;
 
-    public CustomUserDetailsService() {
-        this.userRepository = userRepository;
-    }
-
     @Bean
     public UserDetailsService userDetailsService() {
         return new CustomUserDetailsService();

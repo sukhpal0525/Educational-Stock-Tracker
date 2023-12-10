@@ -1,0 +1,86 @@
+Folder PATH listing
+Volume serial number is 5E0D-4355
+C:.
+|   structure_8-12-23.doc
+|   
+\---stockapp
+    |   StockAppApplication.java
+    |   
+    +---api
+    |       YahooFinanceController.java
+    |       YahooFinanceResponse.java
+    |       YahooFinanceService.java
+    |       YahooResponseConverter.java
+    |       
+    +---auth
+    |   +---controller
+    |   |       AuthController.java
+    |   |       LoginController.java
+    |   |       RegisterController.java
+    |   |       
+    |   \---service
+    |           AuthService.java
+    |           
+    +---config
+    |       SecurityConfig.java
+    |       
+    +---domain
+    |   +---action
+    |   |   +---model
+    |   |   |       Action.java
+    |   |   |       Category.java
+    |   |   |       Depreciation.java
+    |   |   |       Dividend.java
+    |   |   |       Merger.java
+    |   |   |       SpinOff.java
+    |   |   |       Transaction.java
+    |   |   |       
+    |   |   +---repository
+    |   |   |       ActionRepository.java
+    |   |   |       
+    |   |   +---service
+    |   |   |       ActionService.java
+    |   |   |       DividendService.java
+    |   |   |       StockTransactionService.java
+    |   |   |       
+    |   |   \---web
+    |   |           ActionResource.java
+    |   |           
+    |   +---asset
+    |   |       Stock.java
+    |   |       StockController.java
+    |   |       StockRepository.java
+    |   |       
+    |   +---dashboard
+    |   \---portfolio
+    |       |   Portfolio.java
+    |       |   PortfolioController.java
+    |       |   PortfolioItem.java
+    |       |   PortfolioRepository.java
+    |       |   
+    |       \---service
+    |               PortfolioService.java
+    |               
+    +---user
+    |   |   CustomUserDetails.java
+    |   |   Role.java
+    |   |   User.java
+    |   |   UserProfile.java
+    |   |   
+    |   +---controller
+    |   |       UserController.java
+    |   |       UserProfileController.java
+    |   |       
+    |   +---repository
+    |   |       RoleRepository.java
+    |   |       UserRepository.java
+    |   |       
+    |   \---service
+    |           CustomUserDetailsService.java
+    |           UserService.java
+    |           
+    \---util
+            LoginResource.java
+            PasswordEncoderDeserializer.java
+            RegisterResource.java
+            
