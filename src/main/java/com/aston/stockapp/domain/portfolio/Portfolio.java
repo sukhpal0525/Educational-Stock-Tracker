@@ -23,4 +23,10 @@ public class Portfolio {
 
     @OneToMany(mappedBy = "portfolio", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<PortfolioItem> items = new ArrayList<>();
+
+    private double totalCost;
+
+    private double totalValue;
+
+    private double totalChangePercent;
 }

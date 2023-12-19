@@ -19,6 +19,9 @@ public class PortfolioController {
         // Fetch portfolio for the logged in user and add to model
         Portfolio portfolio = portfolioService.getPortfolio();
         model.addAttribute("portfolio", portfolio.getItems());
+        model.addAttribute("totalCost", portfolio.getTotalCost());
+        model.addAttribute("totalValue", portfolio.getTotalValue());
+        model.addAttribute("totalChangePercent", portfolio.getTotalChangePercent());
         return "portfolio";
     }
 

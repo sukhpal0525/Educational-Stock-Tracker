@@ -21,39 +21,68 @@
 <body class="d-flex align-items-center justify-content-center" style="background-color: #f8f9fa;"> <!-- Grey background -->
 <div class="container bg-white wide-container full-height"> <!-- Full height container white -->
 
-    <!-- First card row -->
+    <!-- Key stats cards -->
     <div class="row align-items-stretch mt-5">
-        <!-- Large Card -->
-        <div class="col-md-8 d-flex">
+        <div class="col-md-4 d-flex">
             <div class="card border-secondary w-100">
+                <h5 class="card-header">Total Cost</h5>
                 <div class="card-body text-dark">
-                    <h4 class="card-title">My Portfolio</h4>
+                    <h5 th:text="'$' + ${#numbers.formatDecimal(totalCost, 2, 'COMMA', 2, 'POINT')}"></h5>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 d-flex">
+            <div class="card border-secondary w-100">
+                <h5 class="card-header">Total Value</h5>
+                <div class="card-body text-dark">
+                    <h5 th:text="'$' + ${#numbers.formatDecimal(totalValue, 2, 'COMMA', 2, 'POINT')}"></h5>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 d-flex">
+            <div class="card border-secondary w-100">
+                <h5 class="card-header">Total Change</h5>
+                <div class="card-body text-dark">
+                    <h5 th:text="${totalChangePercent == 0 ? '0.00' : #numbers.formatDecimal(totalChangePercent, 1, 'COMMA', 2, 'POINT')} + '%'"></h5>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row align-items-stretch mt-5">
+        <!-- First card row (full width card) -->
+        <div class="col-md-12 d-flex">
+            <div class="card border-secondary w-100">
+                <h4 class="card-header">My Portfolio</h4>
+                <div class="card-body text-dark">
                     <small class="text-muted"></small>
-                    <hr>
                     <table class="table">
                         <thead>
                         <tr>
-                            <th>Stock</th>
+                            <th>Name</th>
                             <th>Quantity</th>
-                            <th>Current Price</th>
+                            <th>Cost ($)</th>
+                            <th>Value ($)</th>
+                            <th>Change ($)</th>
+                            <th>Change (%)</th>
                         </tr>
                         </thead>
                         <tbody>
                         <tr th:each="item : ${portfolio}">
                             <td th:text="${item.stock.name}">Stock Name</td>
                             <td th:text="${item.quantity}">Quantity</td>
-                            <td th:text="'$' + ${item.stock.currentPrice}">Current Price</td>
+                            <td th:text="${#numbers.formatDecimal(item.purchasePrice * item.quantity, 1, 'COMMA', 2, 'POINT')}">Cost</td>
+                            <td th:text="${#numbers.formatDecimal(item.stock.currentPrice * item.quantity, 1, 'COMMA', 2, 'POINT')}">Value</td>
+                            <td th:text="${#numbers.formatDecimal((item.stock.currentPrice - item.purchasePrice) * item.quantity, 1, 'COMMA', 2, 'POINT')}">Change ($)</td>
+                            <td th:if="${((item.stock.currentPrice - item.purchasePrice) / item.purchasePrice) * 100 >= 0}"
+                                th:text="${#numbers.formatDecimal(((item.stock.currentPrice - item.purchasePrice) / item.purchasePrice) * 100, 1, 'COMMA', 2, 'POINT')} + '%'"
+                                class="text-success"></td>
+                            <td th:if="${((item.stock.currentPrice - item.purchasePrice) / item.purchasePrice) * 100 < 0}"
+                                th:text="${#numbers.formatDecimal(((item.stock.currentPrice - item.purchasePrice) / item.purchasePrice) * 100, 1, 'COMMA', 2, 'POINT')} + '%'"
+                                class="text-danger"></td>
                         </tr>
                         </tbody>
                     </table>
-                </div>
-            </div>
-        </div>
-        <!-- Narrow Card -->
-        <div class="col-md-4 d-flex">
-            <div class="card border-secondary w-100">
-                <h6 class="card-header">Performance</h6>
-                <div class="card-body text-dark">
                 </div>
             </div>
         </div>

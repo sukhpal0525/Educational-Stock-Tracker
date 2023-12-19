@@ -32,8 +32,10 @@ public class PortfolioService {
 
     public Portfolio getPortfolio() {
         Long currentUserId = getCurrentUser();
-        return portfolioRepository.findByUserId(currentUserId)
+        Portfolio portfolio = portfolioRepository.findByUserId(currentUserId)
                 .orElseGet(() -> createPortfolio(currentUserId));
+        calculatePortfolioStats(portfolio);
+        return portfolio;
     }
 
     private Portfolio createPortfolio(Long userId) {
@@ -50,13 +52,26 @@ public class PortfolioService {
         PortfolioStock stock = portfolioStockRepository.findByTicker(symbol)
                 .orElseGet(() -> createPortfolioStock(symbol));
 
-        PortfolioItem item = new PortfolioItem();
-        item.setStock(stock);
-        item.setQuantity(quantity);
+        YahooStock yahooStock = yahooFinanceService.fetchStockData(symbol);
 
+        // Retrieve the current portfolio
         Portfolio portfolio = getPortfolio();
-        item.setPortfolio(portfolio);
-        portfolio.getItems().add(item);
+
+        // Find or create the portfolio item
+        PortfolioItem portfolioItem = portfolio.getItems().stream()
+                .filter(item -> item.getStock().getTicker().equals(symbol))
+                .findFirst()
+                .orElseGet(() -> {
+                    PortfolioItem newItem = new PortfolioItem();
+                    newItem.setStock(stock);
+                    newItem.setPortfolio(portfolio);
+                    portfolio.getItems().add(newItem);
+                    return newItem;
+                });
+        // Update quantity and purchase price
+        portfolioItem.setQuantity(portfolioItem.getQuantity() + quantity);
+        portfolioItem.setPurchasePrice(yahooStock.getPrice().doubleValue());
+
         portfolioRepository.save(portfolio);
     }
 
@@ -71,6 +86,21 @@ public class PortfolioService {
         portfolioStock.setCurrentPrice(yahooStock.getPrice().intValue());
 
         return portfolioStockRepository.save(portfolioStock);
+    }
+
+    private void calculatePortfolioStats(Portfolio portfolio) {
+        double totalCost = 0.0;
+        double totalValue = 0.0;
+        for (PortfolioItem item : portfolio.getItems()) {
+            double cost = item.getPurchasePrice() * item.getQuantity();
+            double value = item.getStock().getCurrentPrice() * item.getQuantity();
+            totalCost += cost;
+            totalValue += value;
+        }
+        double totalChangePercent = totalCost != 0 ? ((totalValue - totalCost) / totalCost) * 100 : 0;
+        portfolio.setTotalCost(totalCost);
+        portfolio.setTotalValue(totalValue);
+        portfolio.setTotalChangePercent(totalChangePercent);
     }
 
     private Long getCurrentUser() {

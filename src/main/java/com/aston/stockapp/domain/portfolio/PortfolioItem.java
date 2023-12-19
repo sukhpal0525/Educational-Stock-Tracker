@@ -22,4 +22,7 @@ public class PortfolioItem {
     private PortfolioStock stock;
 
     private int quantity;
+
+    private double purchasePrice;
+
 }
