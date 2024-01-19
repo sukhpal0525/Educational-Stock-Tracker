@@ -1,10 +1,7 @@
 package com.aston.stockapp.api;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -15,39 +12,13 @@ import java.math.BigDecimal;
 public class YahooFinanceService {
 
     private final RestTemplate restTemplate;
+    private final YahooResponseConverter converter;
     private static final String API_URL = "https://yahoo-finance15.p.rapidapi.com";
-    private YahooResponseConverter converter;
+    private static final String AUTO_COMPLETE_API_URL = "https://apidojo-yahoo-finance-v1.p.rapidapi.com";
 
     public YahooFinanceService() {
         this.converter = new YahooResponseConverter();
         this.restTemplate = new RestTemplate();
-    }
-
-//    public List<HistoricalPrice> fetchHistoricalStockData(String symbol) {
-//        HttpHeaders headers = new HttpHeaders();
-//        headers.set("X-RapidAPI-Key", "f9c5bc36d9mshef13f8f9db483efp19d8cdjsn72b3775c848f");
-//        headers.set("X-RapidAPI-Host", "yahoo-finance15.p.rapidapi.com");
-//        HttpEntity<String> entity = new HttpEntity<>("parameters", headers);
-//
-//        String url = API_URL + "/v3/get-historical-data" + symbol;
-//
-//        ResponseEntity<String> responseStr = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
-//        YahooFinanceResponse jsonResponse = converter.convert(responseStr.getBody());
-//        log.info("Response: {}", responseStr.getBody());
-//
-//        return null;
-//    }
-
-    public void fetchTrendingTickers() {
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("X-RapidAPI-Key", "f9c5bc36d9mshef13f8f9db483efp19d8cdjsn72b3775c848f");
-        headers.set("X-RapidAPI-Host", "apidojo-yahoo-finance-v1.p.rapidapi.com");
-        HttpEntity<String> entity = new HttpEntity<>(null, headers);
-
-        String url = "https://apidojo-yahoo-finance-v1.p.rapidapi.com/market/get-trending-tickers";
-
-        ResponseEntity<String> responseStr = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
-        log.info("Response: {}", responseStr.getBody());
     }
 
     public YahooStock fetchStockData(String symbol) {
@@ -101,10 +72,56 @@ public class YahooFinanceService {
                 Integer.valueOf(jsonResponse.getPriceHint())
         );
     }
+
+    public String getTickerFromName(String query) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("X-RapidAPI-Key", "f9c5bc36d9mshef13f8f9db483efp19d8cdjsn72b3775c848f");
+        headers.set("X-RapidAPI-Host", "apidojo-yahoo-finance-v1.p.rapidapi.com");
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        HttpEntity<String> entity = new HttpEntity<>(headers);
+
+        String url = AUTO_COMPLETE_API_URL + "/auto-complete?q=" + query + "&region=US";
+
+        try {
+            ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
+            return converter.getTickerFromResponse(response.getBody());
+        } catch (Exception e) {
+            log.error("Error fetching ticker from name: ", e);
+        }
+        return null;
+    }
 }
 
 
 
+
+//    public List<HistoricalPrice> fetchHistoricalStockData(String symbol) {
+//        HttpHeaders headers = new HttpHeaders();
+//        headers.set("X-RapidAPI-Key", "f9c5bc36d9mshef13f8f9db483efp19d8cdjsn72b3775c848f");
+//        headers.set("X-RapidAPI-Host", "yahoo-finance15.p.rapidapi.com");
+//        HttpEntity<String> entity = new HttpEntity<>("parameters", headers);
+//
+//        String url = API_URL + "/v3/get-historical-data" + symbol;
+//
+//        ResponseEntity<String> responseStr = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
+//        YahooFinanceResponse jsonResponse = converter.convert(responseStr.getBody());
+//        log.info("Response: {}", responseStr.getBody());
+//
+//        return null;
+//    }
+
+//    public void fetchTrendingTickers() {
+//        HttpHeaders headers = new HttpHeaders();
+//        headers.set("X-RapidAPI-Key", "f9c5bc36d9mshef13f8f9db483efp19d8cdjsn72b3775c848f");
+//        headers.set("X-RapidAPI-Host", "apidojo-yahoo-finance-v1.p.rapidapi.com");
+//        HttpEntity<String> entity = new HttpEntity<>(null, headers);
+//
+//        String url = "https://apidojo-yahoo-finance-v1.p.rapidapi.com/market/get-trending-tickers";
+//
+//        ResponseEntity<String> responseStr = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
+//        log.info("Response: {}", responseStr.getBody());
+//    }
 
 
 //    public Stock fetchStockData(String symbol) throws JsonProcessingException {

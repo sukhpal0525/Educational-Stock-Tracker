@@ -94,5 +94,4 @@ public class YahooFinanceResponse {
     private boolean cryptoTradeable;
     private String displayName;
     private String symbol;
-
 }

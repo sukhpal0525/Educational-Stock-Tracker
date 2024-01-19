@@ -21,4 +21,17 @@ public class YahooResponseConverter implements Converter<String, YahooFinanceRes
         }
         return response;
     }
+
+    public String getTickerFromResponse(String json) {
+        try {
+            JsonNode rootNode = objectMapper.readTree(json);
+            JsonNode firstQuote = rootNode.path("quotes").path(0).path("symbol");
+            if (firstQuote.isTextual()) {
+                return firstQuote.asText();
+            }
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Error parsing auto-complete response: ", e);
+        }
+        return null;
+    }
 }
