@@ -44,13 +44,13 @@ public class SecurityConfig {
 //                .permitAll();
 
             .authorizeRequests()
-                .antMatchers("/", "/index", "/login", "/register").permitAll()
+                .antMatchers("/", "/login", "/register").permitAll()
                 .anyRequest().authenticated()
                 .and()
             .formLogin()
                 .loginPage("/login")
                 .failureUrl("/login?error=true")
-                .defaultSuccessUrl("/index", true)
+                .defaultSuccessUrl("/", true)
                 .failureUrl("/login?error=true")
                 .permitAll()
                 .and()

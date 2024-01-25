@@ -8,48 +8,47 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import java.math.BigDecimal;
 
-    @Getter
-    @Setter
-    public class YahooStock {
+@Getter
+@Setter
+public class YahooStock {
 
-        private String ticker;
-        private String name;
-        private BigDecimal price;
-        private String fullExchangeName;
-        private String exchange;
-        private long regularMarketVolume;
-        private BigDecimal regularMarketDayHigh;
-        private BigDecimal regularMarketDayLow;
-        private BigDecimal marketCap;
-        private boolean tradeable;
-        private BigDecimal regularMarketChangePercent;
-
-        private double preMarketChange;
-        private double preMarketChangePercent;
-        private double preMarketPrice;
-        private String preMarketTime;
-        private String postMarketChange;
-        private double postMarketChangePercent;
-        private double postMarketPrice;
-        private String postMarketTime;
-        private String currency;
-        private String marketState;
-        private double bid;
-        private double ask;
-        private int bidSize;
-        private int askSize;
-        private double fiftyTwoWeekLow;
-        private double fiftyTwoWeekHigh;
-        private double trailingPE;
-        private double dividendYield;
-        private double epsTrailingTwelveMonths;
-        private double bookValue;
-        private double fiftyDayAverage;
-        private double twoHundredDayAverage;
-        private long sharesOutstanding;
-        private double forwardPE;
-        private double priceToBook;
-        private int priceHint;
+    private String ticker;
+    private String name;
+    private BigDecimal price;
+    private String fullExchangeName;
+    private String exchange;
+    private long regularMarketVolume;
+    private BigDecimal regularMarketDayHigh;
+    private BigDecimal regularMarketDayLow;
+    private BigDecimal marketCap;
+    private boolean tradeable;
+    private BigDecimal regularMarketChangePercent;
+    private double preMarketChange;
+    private double preMarketChangePercent;
+    private double preMarketPrice;
+    private String preMarketTime;
+    private String postMarketChange;
+    private double postMarketChangePercent;
+    private double postMarketPrice;
+    private String postMarketTime;
+    private String currency;
+    private String marketState;
+    private double bid;
+    private double ask;
+    private int bidSize;
+    private int askSize;
+    private double fiftyTwoWeekLow;
+    private double fiftyTwoWeekHigh;
+    private double trailingPE;
+    private double dividendYield;
+    private double epsTrailingTwelveMonths;
+    private double bookValue;
+    private double fiftyDayAverage;
+    private double twoHundredDayAverage;
+    private long sharesOutstanding;
+    private double forwardPE;
+    private double priceToBook;
+    private int priceHint;
 
     public YahooStock(String ticker, String name, BigDecimal price, String fullExchangeName, String exchange, long regularMarketVolume, BigDecimal regularMarketDayHigh, BigDecimal regularMarketDayLow, BigDecimal marketCap, boolean tradeable, BigDecimal regularMarketChangePercent, double preMarketChange, double preMarketChangePercent, double preMarketPrice, String preMarketTime, String postMarketChange, double postMarketChangePercent, double postMarketPrice, String postMarketTime, String currency, String marketState, double bid, double ask, int bidSize, int askSize, double fiftyTwoWeekLow, double fiftyTwoWeekHigh, double trailingPE, double dividendYield, double epsTrailingTwelveMonths, double bookValue, double fiftyDayAverage, double twoHundredDayAverage, long sharesOutstanding, double forwardPE, double priceToBook, int priceHint) {
         this.ticker = ticker;

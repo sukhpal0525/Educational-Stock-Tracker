@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.Optional;
 
@@ -31,20 +32,43 @@ public class YahooFinanceController {
     }
 
     @GetMapping("/search")
-    public String searchStock(@RequestParam String query) {
-        String ticker = yahooFinanceService.getTickerFromName(query);
-        if (ticker == null) {
-            ticker = query;
-        }
-        try {
-            YahooStock stock = yahooFinanceService.fetchStockData(ticker);
-            if (stock != null) {
-                return "redirect:/stocks/" + stock.getTicker();
+    public String searchStock(@RequestParam String query, Model model) {
+        if (query == null || query.trim().isEmpty()) {
+            model.addAttribute("modalMessage", "Please provide a query.");
+            return "index";
+        } else {
+            String ticker = yahooFinanceService.getTickerFromName(query);
+            if (ticker == null) {
+                ticker = query;
             }
-        } catch (Exception e) {
-//            log.error("Error in search: ", e);
-            // TODO: Handle exception appropriately
+            try {
+                YahooStock stock = yahooFinanceService.fetchStockData(ticker);
+                if (stock != null) {
+                    return "redirect:/stocks/" + stock.getTicker();
+                }
+            } catch (Exception e) {
+                // log.error("Error in search: ", e);
+            }
+            model.addAttribute("modalMessage", "This stock doesn't exist.");
+            return "index";
         }
-        return "redirect:/stocks";
+    }
+
+    @GetMapping("/valid-stock")
+    public String validStock(Model model) {
+        model.addAttribute("modalMessage", "Loading data for this stock.");
+        return "index";
+    }
+
+    @GetMapping("/invalid-stock")
+    public String invalidStock(Model model) {
+        model.addAttribute("modalMessage", "This stock doesn't exist.");
+        return "index";
+    }
+
+    @GetMapping("/no-query")
+    public String noQuery(Model model) {
+        model.addAttribute("modalMessage", "Please provide a query.");
+        return "index";
     }
 }

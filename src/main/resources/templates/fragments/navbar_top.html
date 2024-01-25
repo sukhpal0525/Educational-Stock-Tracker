@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<link rel="stylesheet" href="/css/fontawesome.css">
+<body>
+
+<nav th:fragment="navbar_top" class="navbar navbar-expand-lg navbar-light bg-white">
+    <div class="container-fluid px-4">
+        <!-- Top Bar -->
+        <div class="d-flex justify-content-between align-items-center w-100">
+            <a class="navbar-brand font-weight-bold" href="#">Portfolio Tracker</a>
+
+            <form class="form-inline my-2 my-lg-0 mx-auto" action="/stocks/search" method="get" style="width: 80%;">
+                <div class="input-group w-100">
+                    <input class="form-control bg-light" type="search" placeholder="Enter a stock ticker or name:" aria-label="Search" name="query">
+                    <button type="submit" class="input-group-append btn bg-light" style="border: 1px solid #ced4da; border-left: none;">
+                        <img src="/icons/search-regular.svg" alt="Search Icon" style="height: 1.5em; width: 1.5em; vertical-align: middle;"/>
+                    </button>
+                </div>
+            </form>
+
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+        </div>
+    </div>
+</nav>
+
+</body>
+</html>
