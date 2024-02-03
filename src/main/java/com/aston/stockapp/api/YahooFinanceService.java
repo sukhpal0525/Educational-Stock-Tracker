@@ -1,5 +1,6 @@
 package com.aston.stockapp.api;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
@@ -90,6 +91,18 @@ public class YahooFinanceService {
             log.error("Error fetching ticker from name: ", e);
         }
         return null;
+    }
+
+    public String fetchHistoricalData(String symbol) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("X-RapidAPI-Key", "f9c5bc36d9mshef13f8f9db483efp19d8cdjsn72b3775c848f");
+        headers.set("X-RapidAPI-Host", "apidojo-yahoo-finance-v1.p.rapidapi.com");
+        HttpEntity<String> entity = new HttpEntity<>(headers);
+
+        String url = "https://apidojo-yahoo-finance-v1.p.rapidapi.com/stock/v3/get-historical-data?symbol=" + symbol + "&region=US";
+        ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
+
+        return response.getBody();
     }
 }
 

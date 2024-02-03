@@ -3,136 +3,293 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stock Overview</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <title>Stock Page</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        .full-height {
-            min-height: 100vh;
-        }
         .wide-container {
-            max-width: 60%;
+            max-width: 90%;
         }
-        .large-spacing {
-            margin-top: 80px;
+        .full-height {
+            height: auto;
+        }
+        .card-table {
+        }
+        .thin-grey-border th,
+        .thin-grey-border td {
+            border: 1px solid #dee2e6;
+        }
+        .small-text {
+            font-size: 0.85rem;
+        }
+        .custom-table-header {
+            background-color: #F1F5FA;
         }
     </style>
 </head>
 
-<body class="d-flex align-items-center justify-content-center" style="background-color: #f8f9fa;"> <!-- Grey background -->
-<div class="container bg-white wide-container full-height"> <!-- Full height container white -->
+<body>
 
-    <!-- First card row -->
-    <div class="row align-items-stretch mt-5">
-        <!-- Large Card -->
-        <div class="col-md-8 d-flex">
-            <div class="card border-secondary w-100">
-                <div class="card-body text-dark">
-                    <h4 class="card-title" th:text="${stock.name} + ' (' + ${stock.ticker} + ')'"></h4>
-                    <small class="text-muted" th:text="${stock.fullExchangeName}"></small>
-                    <hr>
-                    <p class="card-text">Text</p>
+<nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom py-1">
+    <div class="container-fluid" style="max-width: 90%;">
+        <a class="navbar-brand fw-bold pe-2" href="#">TEST</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+            <div class="navbar-nav me-auto">
+                <a class="nav-link small-text active" href="#">Home</a>
+                <a class="nav-link small-text" href="#">Stocks</a>
+                <a class="nav-link small-text" href="#">News</a>
+                <a class="nav-link small-text" href="#">Portfolio</a>
+            </div>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link d-flex justify-content-center align-items-center" href="#" style="width: 2.5rem; height: 2.5rem; background-color: white; border-radius: 50%; position: relative;">
+                    <img src="/icons/bell-solid.svg" alt="Notifications" style="height: 1.5rem; position: absolute;">
+                </a>
+                <button class="btn btn-primary btn-sm ms-2" type="button">Login</button>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<div class="container-fluid bg-light wide-container full-height p-4">
+
+    <div class="row mb-4 g-3">
+        <div class="col-sm-2 d-flex flex-column">
+            <div class="card mb-3">
+                <div class="card-header">Balance</div>
+                <div class="card-body">$1,000.00</div>
+            </div>
+
+            <div class="card flex-grow-1">
+                <div class="card-header">Stock Information</div>
+                <div class="card-body"></div>
+            </div>
+        </div>
+
+        <div class="col-sm-8">
+            <div class="card h-auto" style="min-height: 400px;">
+                <div class="card-header">Price History</div>
+                <div class="card-body d-flex justify-content-center">
+                    <div id="chart" style="width: 100%;"></div>
                 </div>
             </div>
         </div>
-        <!-- Narrow Card -->
-        <div class="col-md-4 d-flex">
-            <div class="card border-secondary w-100">
-                <h6 class="card-header">Performance</h6>
-                <div class="card-body text-dark">
-                    <table class="table">
-                        <tbody>
-                        <tr>
-                            <td>Price:</td>
-                            <td>
-                                <span class="border-0" th:text="'$' + ${stock.price}"></span>
-                                <span th:if="${stock.regularMarketChangePercent >= 0}"
-                                      th:text="' (' + ${#numbers.formatDecimal(stock.regularMarketChangePercent, 1, 'COMMA', 2, 'POINT')} + '%)'"
-                                      class="text-success border-0"></span>
-                                <span th:if="${stock.regularMarketChangePercent < 0}"
-                                      th:text="' (' + ${#numbers.formatDecimal(stock.regularMarketChangePercent, 1, 'COMMA', 2, 'POINT')} + '%)'"
-                                      class="text-danger border-0"></span>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>High (24 Hour):</td>
-                            <td th:text="'$' + ${#numbers.formatDecimal(stock.regularMarketDayHigh, 1, 'COMMA', 2, 'POINT')}"></td>
-                        </tr>
-                        <tr>
-                            <td>Low (24 Hour):</td>
-                            <td th:text="'$' + ${#numbers.formatDecimal(stock.regularMarketDayLow, 1, 'COMMA', 2, 'POINT')}"></td>
-                        </tr>
-                        </tbody>
-                    </table>
+
+        <div class="col-sm-2 d-flex">
+            <div class="card flex-grow-1">
+                <div class="card-header">Buy / Sell</div>
+                <div class="card-body">
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Large custom spacer -->
-    <div class="large-spacing"></div>
 
-    <!-- Second card row -->
-    <div class="row align-items-stretch">
-        <!-- Large Card -->
-        <div class="col-md-8 d-flex">
-            <div class="card border-secondary w-100">
-                <div class="card-body text-dark">
-                    <h5 class="card-title">Price History</h5>
-                </div>
-            </div>
-        </div>
-        <!-- Narrow Card -->
-        <div class="col-md-4 d-flex">
-            <div class="card border-secondary w-100">
-                <h6 class="card-header">Stock Details</h6>
-                <div class="card-body text-dark d-flex align-items-center justify-content-center">
-                    <table class="table">
-                        <tbody>
+
+
+    <!-- Tables-->
+    <div class="row g-3">
+        <div class="col-xxl-6">
+            <div class="card card-table">
+                <div class="card-header">Buy Orders</div>
+                <div class="card-body p-4">
+                    <table class="table table-hover mb-0 thin-grey-border small-text">
+                        <thead class="text-center custom-table-header">
                         <tr>
-                            <td class="border-0">Ticker:</td>
-                            <td class="border-0" th:text="${stock.ticker}"></td>
+                            <th scope="col">Company Name</th>
+                            <th scope="col">Stock Price</th>
+                            <th scope="col">Change</th>
+                            <th scope="col">% Change</th>
+                            <th scope="col">Volume</th>
+                        </tr>
+                        </thead>
+                        <tbody class="text-center">
+                        <tr>
+                            <td>Apple Inc NASDAQ</td>
+                            <td>$147.95</td>
+                            <td>$1.60</td>
+                            <td>1.5%</td>
+                            <td>52,56,333</td>
                         </tr>
                         <tr>
-                            <td class="">Volume:</td>
-                            <td th:text="'$' + ${#numbers.formatDecimal(stock.regularMarketVolume, 0, 'COMMA', 0, 'NONE')}"></td>
+                            <td>Apple Inc NASDAQ</td>
+                            <td>$147.95</td>
+                            <td>$1.60</td>
+                            <td>1.5%</td>
+                            <td>52,56,333</td>
                         </tr>
                         <tr>
-                            <td class="">Market Cap:</td>
-                            <td th:text="'$' + ${#numbers.formatDecimal(stock.marketCap, 0, 'COMMA', 0, 'NONE')}"></td>
+                            <td>Apple Inc NASDAQ</td>
+                            <td>$147.95</td>
+                            <td>$1.60</td>
+                            <td>1.5%</td>
+                            <td>52,56,333</td>
                         </tr>
                         <tr>
-                            <td class="">Tradable:</td>
-                            <td th:text="${stock.tradeable} ? 'Yes' : 'No'"></td>
+                            <td>Apple Inc NASDAQ</td>
+                            <td>$147.95</td>
+                            <td>$1.60</td>
+                            <td>1.5%</td>
+                            <td>52,56,333</td>
                         </tr>
                         <tr>
-                            <td class="">Price Hint:</td>
-                            <td th:text="${stock.priceHint}"></td>
+                            <td>Apple Inc NASDAQ</td>
+                            <td>$147.95</td>
+                            <td>$1.60</td>
+                            <td>1.5%</td>
+                            <td>52,56,333</td>
                         </tr>
                         </tbody>
                     </table>
                 </div>
+                <nav aria-label="Page navigation" class="text-end pe-4">
+                    <ul class="pagination pagination-sm justify-content-end mb-4">
+                        <li class="page-item"><a class="page-link" href="#">Previous</a></li>
+                        <li class="page-item active" aria-current="page"><a class="page-link" href="#">1</a></li>
+                        <li class="page-item"><a class="page-link" href="#">2</a></li>
+                        <li class="page-item"><a class="page-link" href="#">3</a></li>
+                        <li class="page-item"><a class="page-link" href="#">Next</a></li>
+                    </ul>
+                </nav>
             </div>
         </div>
-    </div>
-
-    <!-- Large custom spacer -->
-    <div class="large-spacing"></div>
-
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-md-auto">
-                <form th:action="@{/portfolio/add}" method="post" class="form-inline justify-content-center">
-                    <input type="hidden" name="symbol" th:value="${stock.ticker}" />
-                    <div class="form-group mx-sm-3 mb-2">
-                        <input type="number" name="quantity" class="form-control" placeholder="Quantity" required />
-                    </div>
-                    <button type="submit" class="btn btn-primary mb-2">Add to Portfolio</button>
-                </form>
+        <div class="col-xxl-6">
+            <div class="card card-table">
+                <div class="card-header">Your Sell Orders</div>
+                <div class="card-body p-4">
+                    <table class="table table-hover mb-0 thin-grey-border small-text">
+                        <thead class="text-center custom-table-header">
+                        <tr>
+                            <th scope="col">Company Name</th>
+                            <th scope="col">Stock Price</th>
+                            <th scope="col">Change</th>
+                            <th scope="col">% Change</th>
+                            <th scope="col">Volume</th>
+                        </tr>
+                        </thead>
+                        <tbody class="text-center">
+                        <tr>
+                            <td>Apple Inc NASDAQ</td>
+                            <td>$147.95</td>
+                            <td>$1.60</td>
+                            <td>1.5%</td>
+                            <td>52,56,333</td>
+                        </tr>
+                        <tr>
+                            <td>Apple Inc NASDAQ</td>
+                            <td>$147.95</td>
+                            <td>$1.60</td>
+                            <td>1.5%</td>
+                            <td>52,56,333</td>
+                        </tr>
+                        <tr>
+                            <td>Apple Inc NASDAQ</td>
+                            <td>$147.95</td>
+                            <td>$1.60</td>
+                            <td>1.5%</td>
+                            <td>52,56,333</td>
+                        </tr>
+                        <tr>
+                            <td>Apple Inc NASDAQ</td>
+                            <td>$147.95</td>
+                            <td>$1.60</td>
+                            <td>1.5%</td>
+                            <td>52,56,333</td>
+                        </tr>
+                        <tr>
+                            <td>Apple Inc NASDAQ</td>
+                            <td>$147.95</td>
+                            <td>$1.60</td>
+                            <td>1.5%</td>
+                            <td>52,56,333</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <nav aria-label="Page navigation" class="text-end pe-4">
+                    <ul class="pagination pagination-sm justify-content-end mb-4">
+                        <li class="page-item"><a class="page-link" href="#">Previous</a></li>
+                        <li class="page-item active" aria-current="page"><a class="page-link" href="#">1</a></li>
+                        <li class="page-item"><a class="page-link" href="#">2</a></li>
+                        <li class="page-item"><a class="page-link" href="#">3</a></li>
+                        <li class="page-item"><a class="page-link" href="#">Next</a></li>
+                    </ul>
+                </nav>
             </div>
         </div>
     </div>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    var response = JSON.parse(/*[[${historicalDataJson}]]*/ '{}');
+    // Access the prices array from the response
+    var prices = response.prices || [];
 
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    // Map over the prices array to create the chartData
+    var chartData = prices.map(function(dataPoint) {
+        return {
+            x: new Date(dataPoint.date * 1000),
+            y: dataPoint.close
+        };
+    });
+
+    var options = {
+        series: [{
+            name: "Stock Price",
+            data: chartData,
+            type: 'area'
+        }],
+        chart: {
+            height: 350,
+            type: 'area',
+        },
+        colors: ['#00ff00'],
+        fill: {
+            type: 'gradient',
+            gradient: {
+                shadeIntensity: 0.4,
+                opacityFrom: 0.7,
+                opacityTo: 0.0,
+                stops: [0, 90, 100],
+                colors: ["#00ff00", "#ffffff00"]
+            }
+        },
+        dataLabels: {
+            enabled: false
+        },
+        xaxis: {
+            type: 'datetime',
+            labels: {
+                format: 'dd MMM'
+            }
+        },
+        yaxis: {
+            labels: {
+                formatter: function (val) {
+                    return parseFloat(val).toFixed(2);
+                }
+            }
+        },
+        tooltip: {
+            x: {
+                format: 'dd MMM yyyy'
+            }
+        },
+        stroke: {
+            curve: 'smooth',
+            width: 2,
+            colors: ['#00ff00']
+        }
+    };
+
+    // Create and render the chart with the updated options
+    var chart = new ApexCharts(document.querySelector("#chart"), options);
+    chart.render();
+    /*]]>*/
+</script>
+
 </body>
 </html>

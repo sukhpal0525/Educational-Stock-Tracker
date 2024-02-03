@@ -27,31 +27,28 @@ public class YahooFinanceController {
     @GetMapping("/{symbol}")
     public String getStockData(@PathVariable String symbol, Model model) {
         YahooStock stock = yahooFinanceService.fetchStockData(symbol);
+        String historicalDataJson = yahooFinanceService.fetchHistoricalData(symbol);
         model.addAttribute("stock", stock);
+        model.addAttribute("historicalDataJson", historicalDataJson);
         return "stock";
     }
 
     @GetMapping("/search")
-    public String searchStock(@RequestParam String query, Model model) {
-        if (query == null || query.trim().isEmpty()) {
-            model.addAttribute("modalMessage", "Please provide a query.");
-            return "index";
-        } else {
-            String ticker = yahooFinanceService.getTickerFromName(query);
-            if (ticker == null) {
-                ticker = query;
-            }
-            try {
-                YahooStock stock = yahooFinanceService.fetchStockData(ticker);
-                if (stock != null) {
-                    return "redirect:/stocks/" + stock.getTicker();
-                }
-            } catch (Exception e) {
-                // log.error("Error in search: ", e);
-            }
-            model.addAttribute("modalMessage", "This stock doesn't exist.");
-            return "index";
+    public String searchStock(@RequestParam String query) {
+        String ticker = yahooFinanceService.getTickerFromName(query);
+        if (ticker == null) {
+            ticker = query;
         }
+        try {
+            YahooStock stock = yahooFinanceService.fetchStockData(ticker);
+            if (stock != null) {
+                return "redirect:/stocks/" + stock.getTicker();
+            }
+        } catch (Exception e) {
+//            log.error("Error in searchStock: ", e);
+            // TODO: Handle exception appropriately
+        }
+        return "redirect:/stocks";
     }
 
     @GetMapping("/valid-stock")
