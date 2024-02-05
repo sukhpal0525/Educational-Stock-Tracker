@@ -1,4 +1,4 @@
-package com.aston.stockapp.domain.portfolio.service;
+package com.aston.stockapp.domain.portfolio;
 
 import com.aston.stockapp.api.YahooFinanceService;
 import com.aston.stockapp.api.YahooStock;
@@ -13,22 +13,17 @@ import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityNotFoundException;
 import javax.transaction.Transactional;
+import java.util.List;
 
 @Service
 @Transactional
 public class PortfolioService {
 
-    @Autowired
-    private PortfolioStockRepository portfolioStockRepository;
-
-    @Autowired
-    private PortfolioRepository portfolioRepository;
-
-    @Autowired
-    private YahooFinanceService yahooFinanceService;
-
-    @Autowired
-    private UserRepository userRepository;
+    @Autowired private PortfolioStockRepository portfolioStockRepository;
+    @Autowired private PortfolioItemRepository portfolioItemRepository;
+    @Autowired private PortfolioRepository portfolioRepository;
+    @Autowired private YahooFinanceService yahooFinanceService;
+    @Autowired private UserRepository userRepository;
 
     public Portfolio getPortfolio() {
         Long currentUserId = getCurrentUser();
@@ -101,6 +96,33 @@ public class PortfolioService {
         portfolio.setTotalCost(totalCost);
         portfolio.setTotalValue(totalValue);
         portfolio.setTotalChangePercent(totalChangePercent);
+    }
+
+    public void updatePortfolio(List<PortfolioItem> items) {
+        for (PortfolioItem updatedItem : items) {
+            PortfolioItem existingItem = portfolioItemRepository.findById(updatedItem.getId()).orElse(null);
+            if (existingItem != null) {
+                existingItem.setQuantity(updatedItem.getQuantity());
+                portfolioItemRepository.save(existingItem);
+            }
+        }
+        // Recalculate stats and update the portfolio
+        Portfolio portfolio = getPortfolio();
+        calculatePortfolioStats(portfolio);
+        portfolioRepository.save(portfolio);
+    }
+
+    public void updatePortfolioItem(Long itemId, int quantity) {
+        PortfolioItem item = portfolioItemRepository.findById(itemId)
+                .orElseThrow(() -> new EntityNotFoundException("Portfolio item not found"));
+
+        item.setQuantity(quantity);
+        portfolioItemRepository.save(item);
+
+        // Recalculate and update the portfolio stats
+        Portfolio portfolio = item.getPortfolio();
+        calculatePortfolioStats(portfolio);
+        portfolioRepository.save(portfolio);
     }
 
     private Long getCurrentUser() {
