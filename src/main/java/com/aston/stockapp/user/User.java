@@ -11,6 +11,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
+import java.math.BigDecimal;
 import java.util.Set;
 
 @Entity
@@ -39,6 +40,9 @@ public class User {
 
     @Column(name = "Password", nullable = false)
     private String password;
+
+    @Column(name = "balance", nullable = false, columnDefinition = "DECIMAL(10, 2) DEFAULT 10000.00")
+    private BigDecimal balance = BigDecimal.valueOf(10000);
 
     @JsonDeserialize(using = PasswordEncoderDeserializer.class)
     public void setPassword(String password) { this.password = password; }

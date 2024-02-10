@@ -13,7 +13,9 @@ import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityNotFoundException;
 import javax.transaction.Transactional;
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Transactional
@@ -43,16 +45,11 @@ public class PortfolioService {
     }
 
     public void addStockToPortfolio(String symbol, int quantity) {
-        // Check if stock exists in PortfolioStockRepository
         PortfolioStock stock = portfolioStockRepository.findByTicker(symbol)
                 .orElseGet(() -> createPortfolioStock(symbol));
 
         YahooStock yahooStock = yahooFinanceService.fetchStockData(symbol);
-
-        // Retrieve the current portfolio
         Portfolio portfolio = getPortfolio();
-
-        // Find or create the portfolio item
         PortfolioItem portfolioItem = portfolio.getItems().stream()
                 .filter(item -> item.getStock().getTicker().equals(symbol))
                 .findFirst()
@@ -63,12 +60,46 @@ public class PortfolioService {
                     portfolio.getItems().add(newItem);
                     return newItem;
                 });
-        // Update quantity and purchase price
+
+        double cost = yahooStock.getPrice().doubleValue() * quantity;
+        User user = portfolio.getUser();
+        BigDecimal newBalance = user.getBalance().subtract(BigDecimal.valueOf(cost));
+        user.setBalance(newBalance);
+        userRepository.save(user);
+
         portfolioItem.setQuantity(portfolioItem.getQuantity() + quantity);
         portfolioItem.setPurchasePrice(yahooStock.getPrice().doubleValue());
-
         portfolioRepository.save(portfolio);
     }
+
+
+//    public void addStockToPortfolio(String symbol, int quantity) {
+//        // Check if stock exists in PortfolioStockRepository
+//        PortfolioStock stock = portfolioStockRepository.findByTicker(symbol)
+//                .orElseGet(() -> createPortfolioStock(symbol));
+//
+//        YahooStock yahooStock = yahooFinanceService.fetchStockData(symbol);
+//
+//        // Retrieve the current portfolio
+//        Portfolio portfolio = getPortfolio();
+//
+//        // Find or create the portfolio item
+//        PortfolioItem portfolioItem = portfolio.getItems().stream()
+//                .filter(item -> item.getStock().getTicker().equals(symbol))
+//                .findFirst()
+//                .orElseGet(() -> {
+//                    PortfolioItem newItem = new PortfolioItem();
+//                    newItem.setStock(stock);
+//                    newItem.setPortfolio(portfolio);
+//                    portfolio.getItems().add(newItem);
+//                    return newItem;
+//                });
+//        // Update quantity and purchase price
+//        portfolioItem.setQuantity(portfolioItem.getQuantity() + quantity);
+//        portfolioItem.setPurchasePrice(yahooStock.getPrice().doubleValue());
+//
+//        portfolioRepository.save(portfolio);
+//    }
 
     private PortfolioStock createPortfolioStock(String symbol) {
         // Fetch stock data from YahooFinanceService
@@ -112,14 +143,36 @@ public class PortfolioService {
         portfolioRepository.save(portfolio);
     }
 
-    public void updatePortfolioItem(Long itemId, int quantity) {
-        PortfolioItem item = portfolioItemRepository.findById(itemId)
-                .orElseThrow(() -> new EntityNotFoundException("Portfolio item not found"));
+//    // For editing the quantity of a user's item in their portfolio
+//    public void updatePortfolioItem(Long itemId, int quantity) {
+//        PortfolioItem item = portfolioItemRepository.findById(itemId)
+//                .orElseThrow(() -> new EntityNotFoundException("Portfolio item not found"));
+//
+//        item.setQuantity(quantity);
+//        portfolioItemRepository.save(item);
+//
+//        // Recalculate and update the portfolio stats
+//        Portfolio portfolio = item.getPortfolio();
+//        calculatePortfolioStats(portfolio);
+//        portfolioRepository.save(portfolio);
+//    }
 
-        item.setQuantity(quantity);
+    public void updatePortfolioItem(Long itemId, int newQuantity) {
+        PortfolioItem item = portfolioItemRepository.findById(itemId).orElseThrow(() -> new EntityNotFoundException("Portfolio item not found"));
+
+        // Calculate the difference in stock quantity and the corresponding balance adjustment
+        int quantityDifference = newQuantity - item.getQuantity();
+        BigDecimal costDifference = BigDecimal.valueOf(item.getPurchasePrice()).multiply(BigDecimal.valueOf(quantityDifference));
+
+        // Retrieve the user and adjust balance
+        User user = item.getPortfolio().getUser();
+        user.setBalance(user.getBalance().subtract(costDifference));
+        userRepository.save(user);
+
+        // Update the portfolio item with the new quantity
+        item.setQuantity(newQuantity);
         portfolioItemRepository.save(item);
 
-        // Recalculate and update the portfolio stats
         Portfolio portfolio = item.getPortfolio();
         calculatePortfolioStats(portfolio);
         portfolioRepository.save(portfolio);
@@ -132,5 +185,16 @@ public class PortfolioService {
         }
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
         return userDetails.getUser().getId();
+    }
+
+    public Optional<BigDecimal> getCurrentUserBalance() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated() && authentication.getPrincipal() instanceof CustomUserDetails) {
+            CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+            Long userId = userDetails.getUser().getId();
+            User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("User not found"));
+            return Optional.of(user.getBalance());
+        }
+        return Optional.empty();
     }
 }

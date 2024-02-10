@@ -15,6 +15,31 @@
         .large-spacing {
             margin-top: 80px;
         }
+        .custom-table {
+            border-collapse: collapse;
+            width: 100%;
+            background-color: white;
+        }
+
+        .custom-table th,
+        .custom-table td {
+            border-bottom: 1px solid black;
+            padding: 4px;
+            text-align: left;
+        }
+
+        .custom-table th {
+            background-color: #f8f9fa;
+            border-top: none;
+        }
+
+        .custom-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .custom-table tr {
+            height: 20px;
+        }
     </style>
 </head>
 
@@ -49,8 +74,11 @@
         </div>
     </div>
 
+    <div th:if="${!isEditing}" class="text-right mb-3">
+        <a href="/portfolio/edit" class="btn btn-primary">Edit Portfolio</a>
+    </div>
+
     <div class="row align-items-stretch mt-5">
-        <!-- First card row (full width card) -->
         <div class="col-md-12 d-flex">
             <div class="card border-secondary w-100">
                 <h4 class="card-header">My Portfolio</h4>
@@ -68,9 +96,16 @@
                         </tr>
                         </thead>
                         <tbody>
-                        <tr th:each="item : ${portfolio}">
+                        <tr th:each="item, itemStat : ${portfolio.items}">
                             <td th:text="${item.stock.name}">Stock Name</td>
-                            <td th:text="${item.quantity}">Quantity</td>
+                            <td th:if="${!isEditing}" th:text="${item.quantity}">Quantity</td>
+                            <td th:if="${isEditing}">
+                                <form th:action="@{/portfolio/update}" method="post">
+                                    <input type="number" name="quantity" th:value="${item.quantity}" class="form-control"/>
+                                    <input type="hidden" name="itemId" th:value="${item.id}"/>
+                                    <button type="submit" class="btn btn-primary">Update</button>
+                                </form>
+                            </td>
                             <td th:text="${#numbers.formatDecimal(item.purchasePrice * item.quantity, 1, 'COMMA', 2, 'POINT')}">Cost</td>
                             <td th:text="${#numbers.formatDecimal(item.stock.currentPrice * item.quantity, 1, 'COMMA', 2, 'POINT')}">Value</td>
                             <td th:text="${#numbers.formatDecimal((item.stock.currentPrice - item.purchasePrice) * item.quantity, 1, 'COMMA', 2, 'POINT')}">Change ($)</td>
@@ -88,27 +123,52 @@
         </div>
     </div>
 
-    <!-- Large custom spacer -->
     <div class="large-spacing"></div>
 
-    <!-- Second card row -->
+<!--    <form th:if="${isEditing}" th:action="@{/portfolio/save}" th:object="${portfolio}" method="post" class="text-right mb-3">-->
+<!--        <button type="submit" class="btn btn-success">Save Portfolio</button>-->
+<!--    </form>-->
+
     <div class="row align-items-stretch">
-        <!-- Large Card -->
         <div class="col-md-8 d-flex">
             <div class="card border-secondary w-100">
+                <h6 class="card-header">Stock Details</h6>
                 <div class="card-body text-dark">
-                    <h5 class="card-title">Price History</h5>
+                    <table class="custom-table">
+                        <thead>
+                        <tr>
+                            <th>Header 1</th>
+                            <th>Header 2</th>
+                            <th>Header 3</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td>Data 1</td>
+                            <td>Data 2</td>
+                            <td>Data 3</td>
+                        </tr>
+                        <tr>
+                            <td>Data 4</td>
+                            <td>Data 5</td>
+                            <td>Data 6</td>
+                        </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
-        <!-- Narrow Card -->
         <div class="col-md-4 d-flex">
             <div class="card border-secondary w-100">
                 <h6 class="card-header">Stock Details</h6>
                 <div class="card-body text-dark d-flex align-items-center justify-content-center">
+
+
                 </div>
             </div>
         </div>
+
+
     </div>
 </div>
 

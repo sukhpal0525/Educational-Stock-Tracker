@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Controller
@@ -26,6 +27,7 @@ public class PortfolioController {
         model.addAttribute("totalCost", portfolio.getTotalCost());
         model.addAttribute("totalValue", portfolio.getTotalValue());
         model.addAttribute("totalChangePercent", portfolio.getTotalChangePercent());
+        model.addAttribute("balance", portfolioService.getCurrentUserBalance());
         model.addAttribute("isEditing", false);
         return "portfolio";
     }
