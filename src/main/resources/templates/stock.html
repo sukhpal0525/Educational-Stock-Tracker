@@ -24,6 +24,14 @@
         .custom-table-header {
             background-color: #F1F5FA;
         }
+
+        .card-header .card-title {
+            margin-bottom: 0.25rem;
+        }
+
+        .card-header small {
+            margin-bottom: 0.5rem;
+        }
     </style>
 </head>
 
@@ -54,22 +62,73 @@
 
 <div class="container-fluid bg-light wide-container full-height p-4">
 
+    <!-- Balance -->
     <div class="row mb-4 g-3">
         <div class="col-sm-2 d-flex flex-column">
             <div class="card mb-3">
                 <div class="card-header">Balance</div>
-                <div class="card-body">$1,000.00</div>
+                <div class="card-body">
+                    <p th:if="${#authorization.expression('isAuthenticated()')}">
+                        Balance: <span th:text="'$' + ${#numbers.formatDecimal(balance, 1, 'COMMA', 2, 'POINT')}"></span>
+                    </p>
+                    <p th:unless="${#authorization.expression('isAuthenticated()')}">
+                        Log in to view balance
+                    </p>
+                </div>
             </div>
 
             <div class="card flex-grow-1">
                 <div class="card-header">Stock Information</div>
-                <div class="card-body"></div>
+                <div class="card-body">
+                <table class="table">
+                    <tbody>
+                    <tr>
+                        <td class="">Price:</td>
+                        <td class="">
+                            <span th:text="'$' + ${stock.price}"></span>
+                            <span th:if="${stock.regularMarketChangePercent >= 0}"
+                                  th:text="' (' + ${#numbers.formatDecimal(stock.regularMarketChangePercent, 1, 'COMMA', 2, 'POINT')} + '%)'"
+                                  class="text-success"></span>
+                            <span th:if="${stock.regularMarketChangePercent < 0}"
+                                  th:text="' (' + ${#numbers.formatDecimal(stock.regularMarketChangePercent, 1, 'COMMA', 2, 'POINT')} + '%)'"
+                                  class="text-danger"></span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>High (24H):</td>
+                        <td th:text="'$' + ${#numbers.formatDecimal(stock.regularMarketDayHigh, 1, 'COMMA', 2, 'POINT')}"></td>
+                    </tr>
+                    <tr>
+                        <td>Low (24H):</td>
+                        <td th:text="'$' + ${#numbers.formatDecimal(stock.regularMarketDayLow, 1, 'COMMA', 2, 'POINT')}"></td>
+                    </tr>
+                    </tbody>
+                </table>
+                </div>
             </div>
         </div>
 
+        <!-- Chart card -->
         <div class="col-sm-8">
             <div class="card h-auto" style="min-height: 400px;">
-                <div class="card-header">Price History</div>
+                <div class="card-header d-flex justify-content-between align-items-start">
+                    <div>
+                        <h4 class="card-title" th:text="${stock.name} + ' (' + ${stock.ticker} + ')'">Stock Name (Ticker)</h4>
+                        <small class="text-muted" th:text="${stock.fullExchangeName}">Exchange Name</small>
+                        <hr class="mb-3">
+                    </div>
+                    <h4 class="mb-0" th:text="'$' + ${stock.price}"></h4>
+
+                </div>
+<!--                <div id="timeframe-buttons">-->
+<!--                    <button onclick="updateChart('1d')">1D</button>-->
+<!--                    <button onclick="updateChart('5d')">5D</button>-->
+<!--                    <button onclick="updateChart('6mo')">6M</button>-->
+<!--                    <button onclick="updateChart('1y')">1Y</button>-->
+<!--                    <button onclick="updateChart('5y')">5Y</button>-->
+<!--                    <button onclick="updateChart('ytd')">YTD</button>-->
+<!--                    <button onclick="updateChart('max')">Max</button>-->
+<!--                </div>-->
                 <div class="card-body d-flex justify-content-center">
                     <div id="chart" style="width: 100%;"></div>
                 </div>
@@ -78,8 +137,46 @@
 
         <div class="col-sm-2 d-flex">
             <div class="card flex-grow-1">
-                <div class="card-header">Buy / Sell</div>
+                <div class="card-header">Buy</div>
                 <div class="card-body">
+
+                    <div class="container">
+                        <div class="row justify-content-center">
+                            <div class="col-md-auto">
+                                <form th:action="@{/portfolio/add}" method="post" class="form-inline justify-content-center">
+                                    <input type="hidden" name="symbol" th:value="${stock.ticker}" />
+                                    <div class="form-group mx-sm-3 mb-2">
+                                        <input type="number" name="quantity" class="form-control" placeholder="Quantity" required />
+                                    </div>
+                                    <button type="submit" class="btn btn-primary mb-2">Add to Portfolio</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+<!--                    <table class="table">-->
+<!--                        <tbody>-->
+<!--                        <tr>-->
+<!--                            <td class="border-0">Price:</td>-->
+<!--                            <td class="border-0">-->
+<!--                                <span class="border-0" th:text="'$' + ${stock.price}"></span>-->
+<!--                                <span th:if="${stock.regularMarketChangePercent >= 0}"-->
+<!--                                      th:text="' (' + ${#numbers.formatDecimal(stock.regularMarketChangePercent, 1, 'COMMA', 2, 'POINT')} + '%)'"-->
+<!--                                      class="text-success border-0"></span>-->
+<!--                                <span th:if="${stock.regularMarketChangePercent < 0}"-->
+<!--                                      th:text="' (' + ${#numbers.formatDecimal(stock.regularMarketChangePercent, 1, 'COMMA', 2, 'POINT')} + '%)'"-->
+<!--                                      class="text-danger border-0"></span>-->
+<!--                            </td>-->
+<!--                        </tr>-->
+<!--                        <tr>-->
+<!--                            <td>High (24 Hour):</td>-->
+<!--                            <td th:text="'$' + ${#numbers.formatDecimal(stock.regularMarketDayHigh, 1, 'COMMA', 2, 'POINT')}"></td>-->
+<!--                        </tr>-->
+<!--                        <tr>-->
+<!--                            <td>Low (24 Hour):</td>-->
+<!--                            <td th:text="'$' + ${#numbers.formatDecimal(stock.regularMarketDayLow, 1, 'COMMA', 2, 'POINT')}"></td>-->
+<!--                        </tr>-->
+<!--                        </tbody>-->
+<!--                    </table>-->
                 </div>
             </div>
         </div>
@@ -93,7 +190,7 @@
         <div class="col-xxl-6">
             <div class="card card-table">
                 <div class="card-header">Buy Orders</div>
-                <div class="card-body p-4">
+                <div class="card-body p-4 pb-2">
                     <table class="table table-hover mb-0 thin-grey-border small-text">
                         <thead class="text-center custom-table-header">
                         <tr>
@@ -238,7 +335,7 @@
 
     var options = {
         series: [{
-            name: "Stock Price",
+            name: "Price",
             data: chartData,
             type: 'area'
         }],
@@ -246,15 +343,15 @@
             height: 350,
             type: 'area',
         },
-        colors: ['#00ff00'],
+        colors: ['#22b682'],
         fill: {
             type: 'gradient',
             gradient: {
-                shadeIntensity: 0.4,
-                opacityFrom: 0.7,
-                opacityTo: 0.0,
-                stops: [0, 90, 100],
-                colors: ["#00ff00", "#ffffff00"]
+                shadeIntensity: 1,
+                opacityFrom: 0.4,
+                opacityTo: 0.01,
+                stops: [70, 100],
+                colors: ["#22b682", "#e8f8f5"]
             }
         },
         dataLabels: {
@@ -275,17 +372,21 @@
         },
         tooltip: {
             x: {
-                format: 'dd MMM yyyy'
+                show: false
+            },
+            y: {
+                formatter: function (val) {
+                    return `$${val.toFixed(2)}`;
+                }
             }
         },
         stroke: {
             curve: 'smooth',
             width: 2,
-            colors: ['#00ff00']
+            colors: ['#22b682']
         }
     };
 
-    // Create and render the chart with the updated options
     var chart = new ApexCharts(document.querySelector("#chart"), options);
     chart.render();
     /*]]>*/

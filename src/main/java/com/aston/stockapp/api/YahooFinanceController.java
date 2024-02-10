@@ -1,5 +1,6 @@
 package com.aston.stockapp.api;
 
+import com.aston.stockapp.domain.portfolio.PortfolioService;
 import com.aston.stockapp.domain.portfolio.PortfolioStock;
 import com.aston.stockapp.domain.portfolio.PortfolioStockRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +18,7 @@ import java.util.Optional;
 @RequestMapping("/stocks")
 public class YahooFinanceController {
 
+    @Autowired private PortfolioService portfolioService;
     private final YahooFinanceService yahooFinanceService;
 
     @Autowired
@@ -25,11 +27,14 @@ public class YahooFinanceController {
     }
 
     @GetMapping("/{symbol}")
-    public String getStockData(@PathVariable String symbol, Model model) {
+    public String getStockData(@PathVariable String symbol, @RequestParam(defaultValue = "1mo") String range, Model model) {
         YahooStock stock = yahooFinanceService.fetchStockData(symbol);
-        String historicalDataJson = yahooFinanceService.fetchHistoricalData(symbol);
+        String historicalDataJson = yahooFinanceService.fetchHistoricalData(symbol, range);
+        yahooFinanceService.fetchStockSummary(symbol);
         model.addAttribute("stock", stock);
         model.addAttribute("historicalDataJson", historicalDataJson);
+        portfolioService.getCurrentUserBalance().ifPresent(balance -> model.addAttribute("balance", balance));
+        model.addAttribute("selectedRange", range);
         return "stock";
     }
 

@@ -6,6 +6,7 @@ import com.aston.stockapp.user.service.CustomUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -43,18 +44,35 @@ public class SecurityConfig {
 //                .logout()
 //                .permitAll();
 
-            .authorizeRequests()
-                .antMatchers("/", "/login", "/register").permitAll()
-                .anyRequest().authenticated()
+// Disable auth
+//            .authorizeRequests()
+//                .antMatchers("/", "/login", "/register").permitAll()
+//                .anyRequest().authenticated()
+//                .and()
+//            .formLogin()
+//                .loginPage("/login")
+//                .failureUrl("/login?error=true")
+//                .defaultSuccessUrl("/", true)
+//                .failureUrl("/login?error=true")
+//                .permitAll()yws
+//                .and()
+//            .logout()
+//                .permitAll();
+
+
+                    .csrf().disable()
+                .authorizeRequests()
+                .antMatchers("/", "/login", "/register", "/css/**", "/js/**", "/icons/**").permitAll()
+                .antMatchers(HttpMethod.POST, "/portfolio/add").authenticated() // Only authenticate POST requests to /portfolio/add
+                .anyRequest().permitAll() // All other requests are permitted without authentication
                 .and()
-            .formLogin()
+                .formLogin()
                 .loginPage("/login")
-                .failureUrl("/login?error=true")
                 .defaultSuccessUrl("/", true)
                 .failureUrl("/login?error=true")
                 .permitAll()
                 .and()
-            .logout()
+                .logout()
                 .permitAll();
 
         return http.build();

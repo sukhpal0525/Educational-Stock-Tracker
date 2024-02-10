@@ -15,7 +15,7 @@ public class YahooFinanceService {
     private final RestTemplate restTemplate;
     private final YahooResponseConverter converter;
     private static final String API_URL = "https://yahoo-finance15.p.rapidapi.com";
-    private static final String AUTO_COMPLETE_API_URL = "https://apidojo-yahoo-finance-v1.p.rapidapi.com";
+    private static final String API_URL_SECONDARY = "https://apidojo-yahoo-finance-v1.p.rapidapi.com";
 
     public YahooFinanceService() {
         this.converter = new YahooResponseConverter();
@@ -82,7 +82,7 @@ public class YahooFinanceService {
 
         HttpEntity<String> entity = new HttpEntity<>(headers);
 
-        String url = AUTO_COMPLETE_API_URL + "/auto-complete?q=" + query + "&region=US";
+        String url = API_URL_SECONDARY + "/auto-complete?q=" + query + "&region=US";
 
         try {
             ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
@@ -93,19 +93,50 @@ public class YahooFinanceService {
         return null;
     }
 
-    public String fetchHistoricalData(String symbol) {
+    public String fetchHistoricalData(String symbol, String range) {
+        System.out.println(symbol + "Range: " + range);
+
         HttpHeaders headers = new HttpHeaders();
         headers.set("X-RapidAPI-Key", "f9c5bc36d9mshef13f8f9db483efp19d8cdjsn72b3775c848f");
         headers.set("X-RapidAPI-Host", "apidojo-yahoo-finance-v1.p.rapidapi.com");
         HttpEntity<String> entity = new HttpEntity<>(headers);
 
-        String url = "https://apidojo-yahoo-finance-v1.p.rapidapi.com/stock/v3/get-historical-data?symbol=" + symbol + "&region=US";
+        String url =  API_URL + "/stock/v3/get-historical-data?symbol=" + symbol + "&region=US&range=" + range;
+//        String url = "https://yahoo-finance15.p.rapidapi.com/api/v1/markets/stock/history?symbol= " + symbol + "&interval= " + range + "&diffandsplits=false";
         ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
 
+//        System.out.println(response);
         return response.getBody();
     }
-}
 
+    public String fetchStockSummary(String symbol) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("X-RapidAPI-Key", "f9c5bc36d9mshef13f8f9db483efp19d8cdjsn72b3775c848f");
+        headers.set("X-RapidAPI-Host", "apidojo-yahoo-finance-v1.p.rapidapi.com");
+        HttpEntity<String> entity = new HttpEntity<>(headers);
+
+        String url =  API_URL + "/stock/v2/get-summary" + "?symbol=" + symbol;
+        ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
+
+        System.out.println(response);
+        return response.getBody();
+    }
+
+//    public String fetchHistoricalData(String symbol, String range) {
+//        System.out.println(symbol + "Range: " + range);
+//
+//        HttpHeaders headers = new HttpHeaders();
+//        headers.set("X-RapidAPI-Key", "f9c5bc36d9mshef13f8f9db483efp19d8cdjsn72b3775c848f");
+//        headers.set("X-RapidAPI-Host", "apidojo-yahoo-finance-v1.p.rapidapi.com");
+//        HttpEntity<String> entity = new HttpEntity<>(headers);
+//
+//        String url = API_URL_SECONDARY + "/stock/v3/get-chart?interval=1d&symbol=" + symbol + "&range=" + range + "&region=US&includePrePost=false&useYfid=true&includeAdjustedClose=true&events=capitalGain,div,split";
+//        ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
+//
+//        System.out.println(response);
+//        return response.getBody();
+//    }
+}
 
 
 

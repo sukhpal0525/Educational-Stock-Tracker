@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Overview</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        .full-height {
+            min-height: 100vh;
+        }
+        .wide-container {
+            max-width: 60%;
+        }
+        .large-spacing {
+            margin-top: 80px;
+        }
+    </style>
+</head>
+
+<body class="d-flex align-items-center justify-content-center" style="background-color: #A9A9A9;">
+
+    <div class="container bg-secondary wide-container full-height p-0">
+
+        <!-- Include navbar -->
+        <div th:replace="fragments/navbar_top :: navbar_top"></div>
+        <div th:replace="fragments/navbar_bottom :: navbar_bottom"></div>
+
+        <div class="p-4">
+            <!-- First card row -->
+    <div class="row align-items-stretch mt-5">
+        <!-- Large Card -->
+        <div class="col-md-8 d-flex">
+            <div class="card border-secondary w-100">
+                <div class="card-body text-dark">
+                    <h4 class="card-title" th:text="${stock.name} + ' (' + ${stock.ticker} + ')'"></h4>
+                    <small class="text-muted" th:text="${stock.fullExchangeName}"></small>
+                    <hr>
+                    <p class="card-text">Text</p>
+                </div>
+            </div>
+        </div>
+        <!-- Narrow Card -->
+        <div class="col-md-4 d-flex">
+            <div class="card border-secondary w-100">
+                <h6 class="card-header">Performance</h6>
+                <div class="card-body text-dark">
+                    <table class="table">
+                        <tbody>
+                        <tr>
+                            <td class="border-0">Price:</td>
+                            <td class="border-0">
+                                <span class="border-0" th:text="'$' + ${stock.price}"></span>
+                                <span th:if="${stock.regularMarketChangePercent >= 0}"
+                                      th:text="' (' + ${#numbers.formatDecimal(stock.regularMarketChangePercent, 1, 'COMMA', 2, 'POINT')} + '%)'"
+                                      class="text-success border-0"></span>
+                                <span th:if="${stock.regularMarketChangePercent < 0}"
+                                      th:text="' (' + ${#numbers.formatDecimal(stock.regularMarketChangePercent, 1, 'COMMA', 2, 'POINT')} + '%)'"
+                                      class="text-danger border-0"></span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>High (24 Hour):</td>
+                            <td th:text="'$' + ${#numbers.formatDecimal(stock.regularMarketDayHigh, 1, 'COMMA', 2, 'POINT')}"></td>
+                        </tr>
+                        <tr>
+                            <td>Low (24 Hour):</td>
+                            <td th:text="'$' + ${#numbers.formatDecimal(stock.regularMarketDayLow, 1, 'COMMA', 2, 'POINT')}"></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Large custom spacer -->
+    <div class="large-spacing"></div>
+
+    <!-- Second card row -->
+    <div class="row align-items-stretch">
+        <!-- Large Card -->
+        <div class="col-md-8 d-flex">
+            <div class="card border-secondary w-100">
+                <h6 class="card-header">Price History</h6>
+                <div class="card-body text-dark">
+
+                </div>
+            </div>
+        </div>
+        <!-- Narrow Card -->
+        <div class="col-md-4 d-flex">
+            <div class="card border-secondary w-100">
+                <h6 class="card-header">Stock Details</h6>
+                <div class="card-body text-dark d-flex align-items-center justify-content-center">
+                    <table class="table">
+                        <tbody>
+                        <tr>
+                            <td class="border-0">Ticker:</td>
+                            <td class="border-0" th:text="${stock.ticker}"></td>
+                        </tr>
+                        <tr>
+                            <td class="">Volume:</td>
+                            <td th:text="'$' + ${#numbers.formatDecimal(stock.regularMarketVolume, 0, 'COMMA', 0, 'NONE')}"></td>
+                        </tr>
+                        <tr>
+                            <td class="">Market Cap:</td>
+                            <td th:text="'$' + ${#numbers.formatDecimal(stock.marketCap, 0, 'COMMA', 0, 'NONE')}"></td>
+                        </tr>
+                        <tr>
+                            <td class="">Tradable:</td>
+                            <td th:text="${stock.tradeable} ? 'Yes' : 'No'"></td>
+                        </tr>
+                        <tr>
+                            <td class="">Price Hint:</td>
+                            <td th:text="${stock.priceHint}"></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Large custom spacer -->
+    <div class="large-spacing"></div>
+
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-auto">
+                <form th:action="@{/portfolio/add}" method="post" class="form-inline justify-content-center">
+                    <input type="hidden" name="symbol" th:value="${stock.ticker}" />
+                    <div class="form-group mx-sm-3 mb-2">
+                        <input type="number" name="quantity" class="form-control" placeholder="Quantity" required />
+                    </div>
+                    <button type="submit" class="btn btn-primary mb-2">Add to Portfolio</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+    </div>
+
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
