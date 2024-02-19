@@ -3,6 +3,8 @@ package com.aston.stockapp.domain.portfolio;
 import com.aston.stockapp.api.YahooFinanceService;
 import com.aston.stockapp.api.YahooStock;
 import com.aston.stockapp.domain.portfolio.*;
+import com.aston.stockapp.domain.transaction.Transaction;
+import com.aston.stockapp.domain.transaction.TransactionRepository;
 import com.aston.stockapp.user.CustomUserDetails;
 import com.aston.stockapp.user.User;
 import com.aston.stockapp.user.repository.UserRepository;
@@ -14,6 +16,7 @@ import org.springframework.stereotype.Service;
 import javax.persistence.EntityNotFoundException;
 import javax.transaction.Transactional;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -26,6 +29,7 @@ public class PortfolioService {
     @Autowired private PortfolioRepository portfolioRepository;
     @Autowired private YahooFinanceService yahooFinanceService;
     @Autowired private UserRepository userRepository;
+    @Autowired private TransactionRepository transactionRepository;
 
     public Portfolio getPortfolio() {
         Long currentUserId = getCurrentUser();
@@ -45,21 +49,16 @@ public class PortfolioService {
     }
 
     public void addStockToPortfolio(String symbol, int quantity) {
-        PortfolioStock stock = portfolioStockRepository.findByTicker(symbol)
-                .orElseGet(() -> createPortfolioStock(symbol));
+        PortfolioStock stock = portfolioStockRepository.findByTicker(symbol).orElseGet(() -> createPortfolioStock(symbol));
 
         YahooStock yahooStock = yahooFinanceService.fetchStockData(symbol);
         Portfolio portfolio = getPortfolio();
-        PortfolioItem portfolioItem = portfolio.getItems().stream()
-                .filter(item -> item.getStock().getTicker().equals(symbol))
-                .findFirst()
-                .orElseGet(() -> {
-                    PortfolioItem newItem = new PortfolioItem();
-                    newItem.setStock(stock);
-                    newItem.setPortfolio(portfolio);
-                    portfolio.getItems().add(newItem);
-                    return newItem;
-                });
+        PortfolioItem portfolioItem = portfolio.getItems().stream().filter(item -> item.getStock().getTicker().equals(symbol)).findFirst().orElseGet(() -> {PortfolioItem newItem = new PortfolioItem();
+            newItem.setStock(stock);
+            newItem.setPortfolio(portfolio);
+            portfolio.getItems().add(newItem);
+            return newItem;
+        });
 
         double cost = yahooStock.getPrice().doubleValue() * quantity;
         User user = portfolio.getUser();
@@ -69,9 +68,17 @@ public class PortfolioService {
 
         portfolioItem.setQuantity(portfolioItem.getQuantity() + quantity);
         portfolioItem.setPurchasePrice(yahooStock.getPrice().doubleValue());
+
+        Transaction transaction = new Transaction();
+        transaction.setUser(user);
+        transaction.setDateTime(LocalDateTime.now());
+        transaction.setStockTicker(symbol);
+        transaction.setQuantity(quantity);
+        transaction.setPurchasePrice(yahooStock.getPrice());
+        transaction.setTotalCost(BigDecimal.valueOf(cost));
+        transactionRepository.save(transaction);
         portfolioRepository.save(portfolio);
     }
-
 
 //    public void addStockToPortfolio(String symbol, int quantity) {
 //        // Check if stock exists in PortfolioStockRepository
@@ -173,9 +180,11 @@ public class PortfolioService {
         item.setQuantity(newQuantity);
         portfolioItemRepository.save(item);
 
+        Transaction transaction = new Transaction();
         Portfolio portfolio = item.getPortfolio();
         calculatePortfolioStats(portfolio);
         portfolioRepository.save(portfolio);
+        transactionRepository.save(transaction);
     }
 
     private Long getCurrentUser() {
