@@ -34,4 +34,22 @@ public class YahooResponseConverter implements Converter<String, YahooFinanceRes
         }
         return null;
     }
+
+    public YahooStock convertProfile(String json) throws JsonProcessingException {
+        JsonNode rootNode = objectMapper.readTree(json);
+        JsonNode summaryProfile = rootNode.path("quoteSummary").path("result").get(0).path("summaryProfile");
+
+        return new YahooStock(
+                summaryProfile.path("address1").asText(null),
+                summaryProfile.path("city").asText(null),
+                summaryProfile.path("state").asText(null),
+                summaryProfile.path("zip").asText(null),
+                summaryProfile.path("country").asText(null),
+                summaryProfile.path("phone").asText(null),
+                summaryProfile.path("website").asText(null),
+                summaryProfile.path("industry").asText(null),
+                summaryProfile.path("sector").asText(null),
+                summaryProfile.path("longBusinessSummary").asText(null)
+        );
+    }
 }

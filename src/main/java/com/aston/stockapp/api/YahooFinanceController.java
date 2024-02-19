@@ -27,9 +27,11 @@ public class YahooFinanceController {
     public String getStockData(@PathVariable String symbol, @RequestParam(defaultValue = "10y") String range, Model model) {
         YahooStock stock = yahooFinanceService.fetchStockData(symbol);
         String historicalDataJson = yahooFinanceService.fetchHistoricalData(symbol, range);
+        YahooStock stockInfo = yahooFinanceService.fetchStockInfo(symbol);
 
         model.addAttribute("stockData", stock);
         model.addAttribute("historicalDataJson", historicalDataJson);
+        model.addAttribute("stockInfo", stockInfo);
         portfolioService.getCurrentUserBalance().ifPresent(balance -> model.addAttribute("balance", balance));
         return "stock";
     }

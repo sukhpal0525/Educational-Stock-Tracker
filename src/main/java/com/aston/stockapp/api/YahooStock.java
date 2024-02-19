@@ -15,6 +15,18 @@ public class YahooStock {
     private String ticker;
     private String name;
     private BigDecimal price;
+
+    private String address;
+    private String city;
+    private String state;
+    private String zip;
+    private String country;
+    private String phone;
+    private String website;
+    private String industry;
+    private String sector;
+    private String longBusinessSummary;
+
     private String fullExchangeName;
     private String exchange;
     private long regularMarketVolume;
@@ -88,5 +100,18 @@ public class YahooStock {
         this.forwardPE = forwardPE;
         this.priceToBook = priceToBook;
         this.priceHint = priceHint;
+    }
+
+    public YahooStock(String address, String city, String state, String zip, String country, String phone, String website, String industry, String sector, String longBusinessSummary) {
+        this.address = address;
+        this.city = city;
+        this.state = state;
+        this.zip = zip;
+        this.country = country;
+        this.phone = phone;
+        this.website = website;
+        this.industry = industry;
+        this.sector = sector;
+        this.longBusinessSummary = longBusinessSummary;
     }
 }

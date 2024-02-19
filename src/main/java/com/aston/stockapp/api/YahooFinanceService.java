@@ -72,6 +72,24 @@ public class YahooFinanceService {
         return response.getBody();
     }
 
+    public YahooStock fetchStockInfo(String symbol) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("X-RapidAPI-Key", "f9c5bc36d9mshef13f8f9db483efp19d8cdjsn72b3775c848f");
+        headers.set("X-RapidAPI-Host", "apidojo-yahoo-finance-v1.p.rapidapi.com");
+        HttpEntity<String> entity = new HttpEntity<>(headers);
+
+        String url = API_URL_SECONDARY + "/stock/v3/get-profile" + "?symbol=" + symbol + "&region=US&lang=en-US";
+        ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
+
+        try {
+            System.out.println(response);
+            return converter.convertProfile(response.getBody());
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
 //    public String fetchHistoricalData(String symbol, String range) {
 //        System.out.println(symbol + "Range: " + range);
 //
