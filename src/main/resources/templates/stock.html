@@ -6,6 +6,9 @@
     <title>Stock Page</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
+        .apexcharts-zoom-icon {
+            margin-left: 1rem;
+        }
         .wide-container {
             max-width: 90%;
         }
@@ -24,11 +27,9 @@
         .custom-table-header {
             background-color: #F1F5FA;
         }
-
         .card-header .card-title {
             margin-bottom: 0.25rem;
         }
-
         .card-header small {
             margin-bottom: 0.5rem;
         }
@@ -64,6 +65,81 @@
 
     <!-- Balance -->
     <div class="row mb-4 g-3">
+        <div class="col-sm-3 d-flex">
+            <div class="card flex-grow-1">
+                <div class="card-header">Stock Information</div>
+                <div class="card-body">
+                    <table class="table">
+                        <tbody>
+                        <tr>
+                            <td>Price:</td>
+                            <td class="text-end">
+                                <span th:text="'$' + ${stockData.price}"></span>
+
+                                <span th:if="${stockData.regularMarketChangePercent >= 0}"
+                                      th:text="' (' + '+' + ${#numbers.formatDecimal(stockData.regularMarketChangePercent, 1, 'COMMA', 2, 'POINT')} + '%)'"
+                                      class="text-success"></span>
+                                <span th:if="${stockData.regularMarketChangePercent < 0}"
+                                      th:text="' (' + ${#numbers.formatDecimal(stockData.regularMarketChangePercent, 1, 'COMMA', 2, 'POINT')} + '%)'"
+                                      class="text-danger"></span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>High (24H):</td>
+                            <td class="text-end" th:text="'$' + ${#numbers.formatDecimal(stockData.regularMarketDayHigh, 1, 'COMMA', 2, 'POINT')}"></td>
+                        </tr>
+                        <tr>
+                            <td>Low (24H):</td>
+                            <td class="text-end" th:text="'$' + ${#numbers.formatDecimal(stockData.regularMarketDayLow, 1, 'COMMA', 2, 'POINT')}"></td>
+                        </tr>
+
+                        <tr>
+                            <td>Market Cap:</td>
+                            <td class="text-end" th:text="'$' + ${stockData.marketCap}"></td>
+                        </tr>
+
+                        <tr style="height: 60px;">
+                            <td colspan="2"></td>
+                        </tr>
+                        <tr>
+                            <td>Country:</td>
+                            <td class="text-end" th:text="${stockInfo.country}"></td>
+                        </tr>
+                        <tr>
+                            <td>Industry:</td>
+                            <td class="text-end" th:text="${stockInfo.industry}"></td>
+                        </tr>
+                        <tr>
+                            <td>Sector:</td>
+                            <td class="text-end" th:text="${stockInfo.sector}"></td>
+                        </tr>
+                        <tr>
+                            <td>Website:</td>
+                            <td class="text-end" th:text="${stockInfo.website}"></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chart card -->
+        <div class="col-sm-7">
+            <div class="card h-auto" style="min-height: 400px;">
+                <div class="card-header d-flex justify-content-between align-items-start">
+                    <div>
+                        <h4 class="card-title" th:text="${stockData.name} + ' (' + ${stockData.ticker} + ')'">Stock Name (Ticker)</h4>
+                        <small class="text-muted" th:text="${stockData.fullExchangeName}">Exchange Name</small>
+                    </div>
+                    <h4 th:text="'$' + ${#numbers.formatDecimal(stockData.price, 1, 'COMMA', 2, 'POINT')}"></h4>
+
+                </div>
+                <div class="card-body d-flex justify-content-center">
+                    <div id="chart" style="width: 100%;"></div>
+                </div>
+            </div>
+        </div>
+
         <div class="col-sm-2 d-flex flex-column">
             <div class="card mb-3">
                 <div class="card-header">Balance</div>
@@ -76,114 +152,46 @@
                     </p>
                 </div>
             </div>
-
             <div class="card flex-grow-1">
-                <div class="card-header">Stock Information</div>
+                <div class="card-header">Buy / Sell</div>
                 <div class="card-body">
-                <table class="table">
-                    <tbody>
-                    <tr>
-                        <td class="">Price:</td>
-                        <td class="">
-                            <span th:text="'$' + ${stock.price}"></span>
-                            <span th:if="${stock.regularMarketChangePercent >= 0}"
-                                  th:text="' (' + ${#numbers.formatDecimal(stock.regularMarketChangePercent, 1, 'COMMA', 2, 'POINT')} + '%)'"
-                                  class="text-success"></span>
-                            <span th:if="${stock.regularMarketChangePercent < 0}"
-                                  th:text="' (' + ${#numbers.formatDecimal(stock.regularMarketChangePercent, 1, 'COMMA', 2, 'POINT')} + '%)'"
-                                  class="text-danger"></span>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>High (24H):</td>
-                        <td th:text="'$' + ${#numbers.formatDecimal(stock.regularMarketDayHigh, 1, 'COMMA', 2, 'POINT')}"></td>
-                    </tr>
-                    <tr>
-                        <td>Low (24H):</td>
-                        <td th:text="'$' + ${#numbers.formatDecimal(stock.regularMarketDayLow, 1, 'COMMA', 2, 'POINT')}"></td>
-                    </tr>
-                    </tbody>
-                </table>
-                </div>
-            </div>
-        </div>
-
-        <!-- Chart card -->
-        <div class="col-sm-8">
-            <div class="card h-auto" style="min-height: 400px;">
-                <div class="card-header d-flex justify-content-between align-items-start">
-                    <div>
-                        <h4 class="card-title" th:text="${stock.name} + ' (' + ${stock.ticker} + ')'">Stock Name (Ticker)</h4>
-                        <small class="text-muted" th:text="${stock.fullExchangeName}">Exchange Name</small>
-                        <hr class="mb-3">
-                    </div>
-                    <h4 class="mb-0" th:text="'$' + ${stock.price}"></h4>
-
-                </div>
-<!--                <div id="timeframe-buttons">-->
-<!--                    <button onclick="updateChart('1d')">1D</button>-->
-<!--                    <button onclick="updateChart('5d')">5D</button>-->
-<!--                    <button onclick="updateChart('6mo')">6M</button>-->
-<!--                    <button onclick="updateChart('1y')">1Y</button>-->
-<!--                    <button onclick="updateChart('5y')">5Y</button>-->
-<!--                    <button onclick="updateChart('ytd')">YTD</button>-->
-<!--                    <button onclick="updateChart('max')">Max</button>-->
-<!--                </div>-->
-                <div class="card-body d-flex justify-content-center">
-                    <div id="chart" style="width: 100%;"></div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-sm-2 d-flex">
-            <div class="card flex-grow-1">
-                <div class="card-header">Buy</div>
-                <div class="card-body">
-
                     <div class="container">
                         <div class="row justify-content-center">
                             <div class="col-md-auto">
                                 <form th:action="@{/portfolio/add}" method="post" class="form-inline justify-content-center">
-                                    <input type="hidden" name="symbol" th:value="${stock.ticker}" />
+                                    <input type="hidden" name="symbol" th:value="${stockData.ticker}" />
+<!--                                    <div class="form-group mx-sm-3 mb-2 d-flex justify-content-center">-->
+<!--                                        <input type="range" id="balanceSlider" name="balancePercentage" min="0" max="100" value="0" class="custom-slider mx-2" onchange="updateQuantityAndCost()" oninput="updateQuantityDisplay(this.value)" />-->
+<!--                                        <span id="percentageValue">0%</span>-->
+<!--                                    </div>-->
                                     <div class="form-group mx-sm-3 mb-2">
-                                        <input type="number" name="quantity" class="form-control" placeholder="Quantity" required />
+                                        <input type="number" id="quantity" name="quantity" class="form-control" placeholder="Quantity" required oninput="updateCostFromQuantity(this.value)" />
+                                    </div>
+                                    <!-- Cost -->
+                                    <div class="form-group mx-sm-3 mb-2 d-flex align-items-baseline">
+                                        <span class="form-label me-2">Cost:</span>
+                                        <span id="costDisplay">$0</span>
                                     </div>
                                     <button type="submit" class="btn btn-primary mb-2">Add to Portfolio</button>
                                 </form>
                             </div>
                         </div>
                     </div>
-<!--                    <table class="table">-->
-<!--                        <tbody>-->
-<!--                        <tr>-->
-<!--                            <td class="border-0">Price:</td>-->
-<!--                            <td class="border-0">-->
-<!--                                <span class="border-0" th:text="'$' + ${stock.price}"></span>-->
-<!--                                <span th:if="${stock.regularMarketChangePercent >= 0}"-->
-<!--                                      th:text="' (' + ${#numbers.formatDecimal(stock.regularMarketChangePercent, 1, 'COMMA', 2, 'POINT')} + '%)'"-->
-<!--                                      class="text-success border-0"></span>-->
-<!--                                <span th:if="${stock.regularMarketChangePercent < 0}"-->
-<!--                                      th:text="' (' + ${#numbers.formatDecimal(stock.regularMarketChangePercent, 1, 'COMMA', 2, 'POINT')} + '%)'"-->
-<!--                                      class="text-danger border-0"></span>-->
-<!--                            </td>-->
-<!--                        </tr>-->
-<!--                        <tr>-->
-<!--                            <td>High (24 Hour):</td>-->
-<!--                            <td th:text="'$' + ${#numbers.formatDecimal(stock.regularMarketDayHigh, 1, 'COMMA', 2, 'POINT')}"></td>-->
-<!--                        </tr>-->
-<!--                        <tr>-->
-<!--                            <td>Low (24 Hour):</td>-->
-<!--                            <td th:text="'$' + ${#numbers.formatDecimal(stock.regularMarketDayLow, 1, 'COMMA', 2, 'POINT')}"></td>-->
-<!--                        </tr>-->
-<!--                        </tbody>-->
-<!--                    </table>-->
                 </div>
             </div>
         </div>
     </div>
 
-
-
+    <div class="row">
+        <div class="col-12">
+            <div class="card mb-4">
+                <div class="card-header">Company Summary</div>
+                <div class="card-body">
+                    <p class="card-text" style="text-align: justify;" th:text="${stockInfo.longBusinessSummary}"></p>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Tables-->
     <div class="row g-3">
@@ -194,48 +202,28 @@
                     <table class="table table-hover mb-0 thin-grey-border small-text">
                         <thead class="text-center custom-table-header">
                         <tr>
-                            <th scope="col">Company Name</th>
-                            <th scope="col">Stock Price</th>
-                            <th scope="col">Change</th>
-                            <th scope="col">% Change</th>
-                            <th scope="col">Volume</th>
+                            <th scope="col">Date & Time</th>
+                            <th scope="col">Stock Ticker</th>
+                            <th scope="col">Quantity</th>
+                            <th scope="col">Purchase Price</th>
+                            <th scope="col">Total Cost</th>
                         </tr>
                         </thead>
                         <tbody class="text-center">
-                        <tr>
-                            <td>Apple Inc NASDAQ</td>
-                            <td>$147.95</td>
-                            <td>$1.60</td>
-                            <td>1.5%</td>
-                            <td>52,56,333</td>
+                        <tr th:each="transaction : ${transactions}">
+                            <td th:text="${#temporals.format(transaction.dateTime, 'dd-MM-yy (HH:mm)')}">19-02-24 (15:02)</td>
+                            <td th:text="${transaction.stockTicker}">Stock Ticker</td>
+                            <td th:text="${transaction.quantity}">Quantity</td>
+                            <td th:text="'$' + ${transaction.purchasePrice}">Purchase Price</td>
+                            <td th:text="'$' + ${transaction.totalCost}">Total Cost</td>
                         </tr>
-                        <tr>
-                            <td>Apple Inc NASDAQ</td>
-                            <td>$147.95</td>
-                            <td>$1.60</td>
-                            <td>1.5%</td>
-                            <td>52,56,333</td>
-                        </tr>
-                        <tr>
-                            <td>Apple Inc NASDAQ</td>
-                            <td>$147.95</td>
-                            <td>$1.60</td>
-                            <td>1.5%</td>
-                            <td>52,56,333</td>
-                        </tr>
-                        <tr>
-                            <td>Apple Inc NASDAQ</td>
-                            <td>$147.95</td>
-                            <td>$1.60</td>
-                            <td>1.5%</td>
-                            <td>52,56,333</td>
-                        </tr>
-                        <tr>
-                            <td>Apple Inc NASDAQ</td>
-                            <td>$147.95</td>
-                            <td>$1.60</td>
-                            <td>1.5%</td>
-                            <td>52,56,333</td>
+                        <!-- Empty rows if no transactions-->
+                        <tr th:unless="${hasTransactions}" th:each="i : ${#numbers.sequence(1, 5)}">
+                            <td>&nbsp;</td>
+                            <td>&nbsp;</td>
+                            <td>&nbsp;</td>
+                            <td>&nbsp;</td>
+                            <td>&nbsp;</td>
                         </tr>
                         </tbody>
                     </table>
@@ -321,35 +309,53 @@
 <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 <script th:inline="javascript">
     /*<![CDATA[*/
-    var response = JSON.parse(/*[[${historicalDataJson}]]*/ '{}');
-    // Access the prices array from the response
-    var prices = response.prices || [];
+    let quotes = JSON.parse(/*[[${historicalDataJson}]]*/ '{}').chart.result[0].indicators.quote[0];
+    let timestamps = JSON.parse(/*[[${historicalDataJson}]]*/ '{}').chart.result[0].timestamp;
 
     // Map over the prices array to create the chartData
-    var chartData = prices.map(function(dataPoint) {
-        return {
-            x: new Date(dataPoint.date * 1000),
-            y: dataPoint.close
-        };
-    });
+    let chartData = timestamps.map((time, index) => ({
+        x: new Date(time * 1000),
+        y: [quotes.open[index], quotes.high[index], quotes.low[index], quotes.close[index]]
+    }));
+
+    var initialZoom = {
+        min: chartData[0].x.getTime(),
+        max: chartData[chartData.length - 1].x.getTime()
+    };
 
     var options = {
         series: [{
             name: "Price",
-            data: chartData,
-            type: 'area'
+            data: chartData
         }],
         chart: {
-            height: 350,
             type: 'area',
+            height: 350,
+            toolbar: {
+                tools: {
+                    zoom: true,
+                    zoomin: true,
+                    zoomout: true,
+                    pan: true,
+                    reset: true
+                },
+                autoSelected: 'zoom'
+            },
+            events: {
+                zoomed: function(chartContext, {xaxis}) {
+                    if (xaxis.min < initialZoom.min || xaxis.max > initialZoom.max) {
+                        chartContext.zoomX(initialZoom.min, initialZoom.max);
+                    }
+                }
+            },
         },
         colors: ['#22b682'],
         fill: {
             type: 'gradient',
             gradient: {
                 shadeIntensity: 1,
-                opacityFrom: 0.4,
-                opacityTo: 0.01,
+                opacityFrom: 0.5,
+                opacityTo: 0.6,
                 stops: [70, 100],
                 colors: ["#22b682", "#e8f8f5"]
             }
@@ -359,29 +365,31 @@
         },
         xaxis: {
             type: 'datetime',
-            labels: {
-                format: 'dd MMM'
-            }
+            tooltip: {
+                enabled: false
+            },
+            min: initialZoom.min,
+            max: initialZoom.max
         },
         yaxis: {
             labels: {
-                formatter: function (val) {
-                    return parseFloat(val).toFixed(2);
+                formatter: function(val) {
+                    return `$${parseFloat(val).toFixed(2)}`;
                 }
             }
         },
         tooltip: {
             x: {
-                show: false
+                format: 'dd MMM yyyy'
             },
             y: {
-                formatter: function (val) {
+                formatter: function(val) {
                     return `$${val.toFixed(2)}`;
                 }
-            }
+            },
         },
         stroke: {
-            curve: 'smooth',
+            curve: 'straight',
             width: 2,
             colors: ['#22b682']
         }
@@ -389,6 +397,48 @@
 
     var chart = new ApexCharts(document.querySelector("#chart"), options);
     chart.render();
+    /*]]>*/
+</script>
+
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    const stockPrice = /*[[${stockData.price}]]*/ '100';
+    // const balance = /*[[${balance}]]*/ '1000';
+
+    // function updateQuantityAndCost() {
+    //     const sliderValue = document.getElementById('balanceSlider').value;
+    //     const percentageValue = document.getElementById('percentageValue');
+    //     const quantityInput = document.getElementById('quantity');
+    //     const costDisplay = document.getElementById('costDisplay');
+
+    //     // Update the displayed slider percentage
+    //     percentageValue.textContent = sliderValue + '%';
+
+    //     // Calculate the quantity based on slider value and update the quantity input field
+    //     const quantity = (balance * sliderValue / 100) / stockPrice;
+    //     quantityInput.value = Math.floor(quantity);
+
+    //     // Calculate and update the cost based on the updated quantity
+    //     const cost = quantityInput.value * stockPrice;
+    //     costDisplay.textContent = `$${cost.toFixed(2)}`;
+    // }
+
+    function updateCostFromQuantity(quantity) {
+        const costDisplay = document.getElementById('costDisplay');
+        const cost = quantity * stockPrice;
+        costDisplay.textContent = `$${cost.toFixed(2)}`;
+    }
+
+    // Initialise values on page load
+    // updateQuantityAndCost();
+
+    // Event listener for the range slider to update values
+    // document.getElementById('balanceSlider').addEventListener('input', updateQuantityAndCost);
+
+    // Event listener for the quantity input to update cost in realtime
+    document.getElementById('quantity').addEventListener('input', function() {
+        updateCostFromQuantity(this.value);
+    });
     /*]]>*/
 </script>
 

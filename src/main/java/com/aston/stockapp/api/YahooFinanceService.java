@@ -1,5 +1,6 @@
 package com.aston.stockapp.api;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
@@ -33,45 +34,7 @@ public class YahooFinanceService {
         ResponseEntity<String> responseStr = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
         YahooFinanceResponse jsonResponse = converter.convert(responseStr.getBody());
 
-        return new YahooStock(
-                symbol,
-                jsonResponse.getLongName(),
-                BigDecimal.valueOf(jsonResponse.getRegularMarketPrice()),
-                jsonResponse.getFullExchangeName(),
-                jsonResponse.getExchange(),
-                jsonResponse.getRegularMarketVolume(),
-                BigDecimal.valueOf(jsonResponse.getRegularMarketDayHigh()),
-                BigDecimal.valueOf(jsonResponse.getRegularMarketDayLow()),
-                BigDecimal.valueOf(jsonResponse.getMarketCap()),
-                jsonResponse.isTradeable(),
-                BigDecimal.valueOf(jsonResponse.getRegularMarketChangePercent()),
-                jsonResponse.getPreMarketChange(),
-                jsonResponse.getPreMarketChangePercent(),
-                jsonResponse.getPreMarketPrice(),
-                jsonResponse.getPreMarketTime(),
-                jsonResponse.getPostMarketChange(),
-                jsonResponse.getPostMarketChangePercent(),
-                jsonResponse.getPostMarketPrice(),
-                jsonResponse.getPostMarketTime(),
-                jsonResponse.getCurrency(),
-                jsonResponse.getMarketState(),
-                jsonResponse.getBid(),
-                jsonResponse.getAsk(),
-                jsonResponse.getBidSize(),
-                jsonResponse.getAskSize(),
-                jsonResponse.getFiftyTwoWeekLow(),
-                jsonResponse.getFiftyTwoWeekHigh(),
-                jsonResponse.getTrailingPE(),
-                jsonResponse.getDividendYield(),
-                jsonResponse.getEpsTrailingTwelveMonths(),
-                jsonResponse.getBookValue(),
-                jsonResponse.getFiftyDayAverage(),
-                jsonResponse.getTwoHundredDayAverage(),
-                jsonResponse.getSharesOutstanding(),
-                jsonResponse.getForwardPE(),
-                jsonResponse.getPriceToBook(),
-                Integer.valueOf(jsonResponse.getPriceHint())
-        );
+        return new YahooStock(symbol, jsonResponse.getLongName(), BigDecimal.valueOf(jsonResponse.getRegularMarketPrice()), jsonResponse.getFullExchangeName(), jsonResponse.getExchange(), jsonResponse.getRegularMarketVolume(), BigDecimal.valueOf(jsonResponse.getRegularMarketDayHigh()), BigDecimal.valueOf(jsonResponse.getRegularMarketDayLow()), BigDecimal.valueOf(jsonResponse.getMarketCap()), jsonResponse.isTradeable(), BigDecimal.valueOf(jsonResponse.getRegularMarketChangePercent()), jsonResponse.getPreMarketChange(), jsonResponse.getPreMarketChangePercent(), jsonResponse.getPreMarketPrice(), jsonResponse.getPreMarketTime(), jsonResponse.getPostMarketChange(), jsonResponse.getPostMarketChangePercent(), jsonResponse.getPostMarketPrice(), jsonResponse.getPostMarketTime(), jsonResponse.getCurrency(), jsonResponse.getMarketState(), jsonResponse.getBid(), jsonResponse.getAsk(), jsonResponse.getBidSize(), jsonResponse.getAskSize(), jsonResponse.getFiftyTwoWeekLow(), jsonResponse.getFiftyTwoWeekHigh(), jsonResponse.getTrailingPE(), jsonResponse.getDividendYield(), jsonResponse.getEpsTrailingTwelveMonths(), jsonResponse.getBookValue(), jsonResponse.getFiftyDayAverage(), jsonResponse.getTwoHundredDayAverage(), jsonResponse.getSharesOutstanding(), jsonResponse.getForwardPE(), jsonResponse.getPriceToBook(), Integer.valueOf(jsonResponse.getPriceHint()));
     }
 
     public String getTickerFromName(String query) {
@@ -101,24 +64,11 @@ public class YahooFinanceService {
         headers.set("X-RapidAPI-Host", "apidojo-yahoo-finance-v1.p.rapidapi.com");
         HttpEntity<String> entity = new HttpEntity<>(headers);
 
-        String url =  API_URL + "/stock/v3/get-historical-data?symbol=" + symbol + "&region=US&range=" + range;
-//        String url = "https://yahoo-finance15.p.rapidapi.com/api/v1/markets/stock/history?symbol= " + symbol + "&interval= " + range + "&diffandsplits=false";
+//        String url =  API_URL_SECONDARY + "/stock/v3/get-historical-data?symbol=" + "AAPL" + "&region=US" + "&interval=5m&range=5y" + range;
+        String url = API_URL_SECONDARY + "/stock/v3/get-chart?interval=1wk&symbol=" + symbol + "&range=10y&region=US";
         ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
 
 //        System.out.println(response);
-        return response.getBody();
-    }
-
-    public String fetchStockSummary(String symbol) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("X-RapidAPI-Key", "f9c5bc36d9mshef13f8f9db483efp19d8cdjsn72b3775c848f");
-        headers.set("X-RapidAPI-Host", "apidojo-yahoo-finance-v1.p.rapidapi.com");
-        HttpEntity<String> entity = new HttpEntity<>(headers);
-
-        String url =  API_URL + "/stock/v2/get-summary" + "?symbol=" + symbol;
-        ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
-
-        System.out.println(response);
         return response.getBody();
     }
 

@@ -6,10 +6,7 @@ import com.aston.stockapp.domain.portfolio.PortfolioStockRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.Optional;
@@ -27,16 +24,21 @@ public class YahooFinanceController {
     }
 
     @GetMapping("/{symbol}")
-    public String getStockData(@PathVariable String symbol, @RequestParam(defaultValue = "1mo") String range, Model model) {
+    public String getStockData(@PathVariable String symbol, @RequestParam(defaultValue = "10y") String range, Model model) {
         YahooStock stock = yahooFinanceService.fetchStockData(symbol);
         String historicalDataJson = yahooFinanceService.fetchHistoricalData(symbol, range);
-        yahooFinanceService.fetchStockSummary(symbol);
-        model.addAttribute("stock", stock);
+
+        model.addAttribute("stockData", stock);
         model.addAttribute("historicalDataJson", historicalDataJson);
         portfolioService.getCurrentUserBalance().ifPresent(balance -> model.addAttribute("balance", balance));
-        model.addAttribute("selectedRange", range);
         return "stock";
     }
+
+//    @GetMapping("/stocks/{symbol}/data")
+//    @ResponseBody
+//    public String fetchHistoricalData(@PathVariable String symbol, @RequestParam(required = false) String range) {
+//        return yahooFinanceService.fetchHistoricalData(symbol, range);
+//    }
 
     @GetMapping("/search")
     public String searchStock(@RequestParam String query) {
