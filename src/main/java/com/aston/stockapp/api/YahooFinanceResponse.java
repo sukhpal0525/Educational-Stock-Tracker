@@ -1,10 +1,10 @@
 package com.aston.stockapp.api;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 public class YahooFinanceResponse {
@@ -94,4 +94,5 @@ public class YahooFinanceResponse {
     private boolean cryptoTradeable;
     private String displayName;
     private String symbol;
+    private boolean hasPrePostMarketData;
 }
