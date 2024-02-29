@@ -1,22 +1,15 @@
 package com.aston.stockapp.api;
 
 import com.aston.stockapp.domain.portfolio.PortfolioService;
-import com.aston.stockapp.domain.portfolio.PortfolioStock;
-import com.aston.stockapp.domain.portfolio.PortfolioStockRepository;
-import com.aston.stockapp.domain.transaction.Transaction;
 import com.aston.stockapp.domain.transaction.TransactionRepository;
 import com.aston.stockapp.user.CustomUserDetails;
-import com.aston.stockapp.user.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 @Controller
 @RequestMapping("/stocks")
@@ -32,69 +25,66 @@ public class YahooFinanceController {
     }
 
     @GetMapping("/{symbol}")
-    public String getStockData(@PathVariable String symbol, @RequestParam(defaultValue = "10y") String range, Authentication authentication, Model model) {
-        YahooStock stock = yahooFinanceService.fetchStockData(symbol);
-        String historicalDataJson = yahooFinanceService.fetchHistoricalData(symbol, range);
-        YahooStock stockInfo = yahooFinanceService.fetchStockInfo(symbol);
+    public String getStockData(@PathVariable String symbol, @RequestParam(defaultValue = "10y") String range, @RequestParam(required = false) Integer quantity, @RequestParam(required = false) String action, Authentication authentication, Model model) {
+        // Fetch and wait for all stock data asynchronously
+        CompletableFuture<YahooStock> stockFuture = yahooFinanceService.fetchStockDataAsync(symbol);
+        CompletableFuture<String> historicalDataFuture = yahooFinanceService.fetchHistoricalDataAsync(symbol, range);
+        CompletableFuture<YahooStock> stockInfoFuture = yahooFinanceService.fetchStockInfoAsync(symbol);
+        CompletableFuture.allOf(stockFuture, historicalDataFuture, stockInfoFuture).join();
 
-        // Check if the user is authenticated
-        if (authentication != null && authentication.isAuthenticated()) {
-            User user = ((CustomUserDetails) authentication.getPrincipal()).getUser();
-            List<Transaction> transactions = transactionRepository.findByUserId(user.getId());
-            model.addAttribute("transactions", transactions);
-            model.addAttribute("hasTransactions", !transactions.isEmpty());
-        } else {
-            model.addAttribute("transactions", Collections.emptyList());
-            model.addAttribute("hasTransactions", false);
+        // Populate model with stock data
+        model.addAttribute("stockData", stockFuture.join());
+        model.addAttribute("historicalDataJson", historicalDataFuture.join());
+        model.addAttribute("stockInfo", stockInfoFuture.join());
+
+        // Handle sell action if its present
+        if ("sell".equalsIgnoreCase(action) && quantity != null && authentication != null && authentication.isAuthenticated()) {
+            CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+            Long userId = userDetails.getUser().getId();
+            try {
+                portfolioService.updateStockInPortfolio(userId, symbol, quantity, false); // False = selling
+                model.addAttribute("transactionSuccess", "Successfully sold " + quantity + " units of " + symbol + ".");
+            } catch (IllegalArgumentException e) {
+                // Catch exception and set the model attribute for the error message
+                model.addAttribute("transactionFailed", e.getMessage());
+            }
         }
 
-        model.addAttribute("stockData", stock);
-        model.addAttribute("historicalDataJson", historicalDataJson);
-        model.addAttribute("stockInfo", stockInfo);
-        portfolioService.getCurrentUserBalance().ifPresent(balance -> model.addAttribute("balance", balance));
-
+        // Check if the user is authenticated to populate user-related data
+        if (authentication != null && authentication.isAuthenticated()) {
+            Long userId = ((CustomUserDetails) authentication.getPrincipal()).getUser().getId();
+            model.addAttribute("ownsStock", portfolioService.ownsStock(symbol));
+            model.addAttribute("transactions", transactionRepository.findByUserId(userId));
+            model.addAttribute("quantity", portfolioService.getPortfolio(userId).getItems());
+            portfolioService.getCurrentUserBalance().ifPresent(balance -> model.addAttribute("balance", balance));
+        }
         return "stock";
     }
+
 
 //    @GetMapping("/stocks/{symbol}/data")
 //    @ResponseBody
 //    public String fetchHistoricalData(@PathVariable String symbol, @RequestParam(required = false) String range) {
-//        return yahooFinanceService.fetchHistoricalData(symbol, range);
+//        return yahooFinanceService.fetchHistoricalDataAsync(symbol, range);
 //    }
 
     @GetMapping("/search")
-    public String searchStock(@RequestParam String query) {
+    public CompletableFuture<String> searchStock(@RequestParam String query) {
         String ticker = yahooFinanceService.getTickerFromName(query);
         if (ticker == null) {
             ticker = query;
         }
-        try {
-            YahooStock stock = yahooFinanceService.fetchStockData(ticker);
+
+        return yahooFinanceService.fetchStockDataAsync(ticker).thenApply(stock -> {
             if (stock != null) {
                 return "redirect:/stocks/" + stock.getTicker();
+            } else {
+                return "redirect:/stocks";
             }
-        } catch (Exception e) {
-//            log.error("Error in searchStock: ", e);
+        }).exceptionally(ex -> {
+            // log.error("Error in searchStock: ", ex);
             // TODO: Handle exception appropriately
-        }
-        return "redirect:/stocks";
-    }
-
-    @GetMapping("/valid-stock")
-    public String validStock(Model model) {
-        model.addAttribute("modalMessage", "Loading data for this stock.");
-        return "index";
-    }
-
-    @GetMapping("/invalid-stock")
-    public String invalidStock(Model model) {
-        model.addAttribute("modalMessage", "This stock doesn't exist.");
-        return "index";
-    }
-
-    @GetMapping("/no-query")
-    public String noQuery(Model model) {
-        model.addAttribute("modalMessage", "Please provide a query.");
-        return "index";
+            return "redirect:/stocks";
+        });
     }
 }
