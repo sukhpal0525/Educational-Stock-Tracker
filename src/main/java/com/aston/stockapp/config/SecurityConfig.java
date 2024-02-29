@@ -1,9 +1,6 @@
 package com.aston.stockapp.config;
 
-import com.aston.stockapp.api.YahooResponseConverter;
-import com.aston.stockapp.user.repository.UserRepository;
 import com.aston.stockapp.user.service.CustomUserDetailsService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -31,19 +28,6 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-//                .authorizeRequests()
-//                .anyRequest().permitAll()
-//                .and()
-//                .formLogin()
-//                .loginPage("/login")
-//                .failureUrl("/login?error=true")
-//                .defaultSuccessUrl("/index", true)
-//                .failureUrl("/login?error=true")
-//                .permitAll()
-//                .and()
-//                .logout()
-//                .permitAll();
-
 // Disable auth
 //            .authorizeRequests()
 //                .antMatchers("/", "/login", "/register").permitAll()
@@ -59,22 +43,36 @@ public class SecurityConfig {
 //            .logout()
 //                .permitAll();
 
+//Old (Working)
+//                    .csrf().disable()
+//                .authorizeRequests()
+//                .antMatchers("/", "/login", "/register", "/css/**", "/js/**", "/icons/**").permitAll()
+//                .antMatchers(HttpMethod.POST, "/portfolio/add").authenticated() // Only authenticate POST requests to /portfolio/add
+//                .anyRequest().permitAll() // All other requests are permitted without authentication
+//                .and()
+//                .formLogin()
+//                .loginPage("/login")
+//                .defaultSuccessUrl("/", true)
+//                .failureUrl("/login?error=true")
+//                .permitAll()
+//                .and()
+//                .logout()
+//                .permitAll();
 
                     .csrf().disable()
-                .authorizeRequests()
-                .antMatchers("/", "/login", "/register", "/css/**", "/js/**", "/icons/**").permitAll()
-                .antMatchers(HttpMethod.POST, "/portfolio/add").authenticated() // Only authenticate POST requests to /portfolio/add
-                .anyRequest().permitAll() // All other requests are permitted without authentication
-                .and()
-                .formLogin()
-                .loginPage("/login")
-                .defaultSuccessUrl("/", true)
-                .failureUrl("/login?error=true")
-                .permitAll()
-                .and()
-                .logout()
-                .permitAll();
+                    .authorizeRequests()
+                    .antMatchers("/", "/login", "/register", "/css/**", "/js/**", "/icons/**").permitAll()
+                    .antMatchers(HttpMethod.POST, "/portfolio/add").authenticated() // Only authenticate POST requests to /portfolio/add
+                    .anyRequest().permitAll() // All other requests are permitted without authentication
+                    .and()
+                    .formLogin()
+                    .loginPage("/login")
+                    // Removed the defaultSuccessUrl so Spring Security can redirect to the previous url
+                    .permitAll()
+                    .and()
+                    .logout()
+                    .permitAll();
 
-        return http.build();
-    }
+            return http.build();
+        }
 }
