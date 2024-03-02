@@ -25,7 +25,7 @@ public class YahooFinanceController {
     }
 
     @GetMapping("/{symbol}")
-    public String getStockData(@PathVariable String symbol, @RequestParam(defaultValue = "10y") String range, @RequestParam(required = false) Integer quantity, @RequestParam(required = false) String action, Authentication authentication, Model model) {
+    public String getStockData(@PathVariable String symbol, @RequestParam(defaultValue = "10y") String range, @RequestParam(required = false) Integer quantity, Authentication authentication, Model model) {
         // Fetch and wait for all stock data asynchronously
         CompletableFuture<YahooStock> stockFuture = yahooFinanceService.fetchStockDataAsync(symbol);
         CompletableFuture<String> historicalDataFuture = yahooFinanceService.fetchHistoricalDataAsync(symbol, range);
@@ -38,7 +38,7 @@ public class YahooFinanceController {
         model.addAttribute("stockInfo", stockInfoFuture.join());
 
         // Handle sell action if its present
-        if ("sell".equalsIgnoreCase(action) && quantity != null && authentication != null && authentication.isAuthenticated()) {
+        if (quantity != null && authentication != null && authentication.isAuthenticated()) {
             CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
             Long userId = userDetails.getUser().getId();
             try {
@@ -74,7 +74,6 @@ public class YahooFinanceController {
         if (ticker == null) {
             ticker = query;
         }
-
         return yahooFinanceService.fetchStockDataAsync(ticker).thenApply(stock -> {
             if (stock != null) {
                 return "redirect:/stocks/" + stock.getTicker();
