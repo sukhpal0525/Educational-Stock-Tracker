@@ -13,11 +13,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @RequestMapping("/register")
 public class RegisterController {
 
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    @Autowired private UserRepository userRepository;
+    @Autowired private PasswordEncoder passwordEncoder;
 
     @GetMapping
     public String showRegisterForm(Model model) {
@@ -26,18 +23,25 @@ public class RegisterController {
     }
 
     @PostMapping
-    public String processRegistration(@ModelAttribute("user") User user, RedirectAttributes redirectAttrs) {
-        String encodedPassword = passwordEncoder.encode(user.getPassword());
-        user.setPassword(encodedPassword);
-
-        // If user already exists:
-        if (userRepository.findByUsername(user.getUsername()) != null) {
-            redirectAttrs.addFlashAttribute("errorMsg", "Username already exists.");
+    public String processRegistration(@RequestParam String username, @RequestParam String password, @RequestParam String confirmPassword, RedirectAttributes redirectAttrs) {
+        // Check if passwords match
+        if (!password.equals(confirmPassword)) {
+            redirectAttrs.addFlashAttribute("errorMsg", "Error: Both passwords need to match.");
             return "redirect:/register";
         }
-
+        // If user already exists:
+        if (userRepository.findByUsername(username) != null) {
+            redirectAttrs.addFlashAttribute("errorMsg", "Error: This username has already been taken.");
+            return "redirect:/register";
+        }
+        // Proceed with the registration
+        String encodedPassword = passwordEncoder.encode(password);
+        User user = new User();
+        user.setUsername(username);
+        user.setPassword(encodedPassword);
         userRepository.save(user);
-        redirectAttrs.addFlashAttribute("successMsg", "Registration successful. Please login.");
+
+        redirectAttrs.addFlashAttribute("successMsg", "Success: Your account has been registered. Please login.");
         return "redirect:/login";
     }
 }
