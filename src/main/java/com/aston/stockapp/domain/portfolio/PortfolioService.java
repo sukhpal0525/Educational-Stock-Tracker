@@ -2,7 +2,6 @@ package com.aston.stockapp.domain.portfolio;
 
 import com.aston.stockapp.api.YahooFinanceService;
 import com.aston.stockapp.api.YahooStock;
-import com.aston.stockapp.domain.portfolio.*;
 import com.aston.stockapp.domain.transaction.Transaction;
 import com.aston.stockapp.domain.transaction.TransactionRepository;
 import com.aston.stockapp.user.CustomUserDetails;
@@ -17,8 +16,8 @@ import javax.persistence.EntityNotFoundException;
 import javax.transaction.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 @Transactional
@@ -31,54 +30,58 @@ public class PortfolioService {
     @Autowired private UserRepository userRepository;
     @Autowired private TransactionRepository transactionRepository;
 
-    public Portfolio getPortfolio() {
-        Long currentUserId = getCurrentUser();
-        Portfolio portfolio = portfolioRepository.findByUserId(currentUserId)
-                .orElseGet(() -> createPortfolio(currentUserId));
+    public Portfolio getPortfolio(Long userId) {
+        Portfolio portfolio = portfolioRepository.findByUserId(userId).orElseGet(() -> createPortfolio(userId));
         calculatePortfolioStats(portfolio);
         return portfolio;
     }
 
     private Portfolio createPortfolio(Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException("User not found"));
-
+        User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("User not found"));
         Portfolio newPortfolio = new Portfolio();
         newPortfolio.setUser(user);
         return portfolioRepository.save(newPortfolio);
     }
 
-    public void addStockToPortfolio(String symbol, int quantity) {
-        PortfolioStock stock = portfolioStockRepository.findByTicker(symbol).orElseGet(() -> createPortfolioStock(symbol));
+    public CompletableFuture<Void> addStockToPortfolio(String symbol, int quantity, BigDecimal finalPrice) {
+        Long currentUserId = getCurrentUser();
 
-        YahooStock yahooStock = yahooFinanceService.fetchStockData(symbol);
-        Portfolio portfolio = getPortfolio();
-        PortfolioItem portfolioItem = portfolio.getItems().stream().filter(item -> item.getStock().getTicker().equals(symbol)).findFirst().orElseGet(() -> {PortfolioItem newItem = new PortfolioItem();
-            newItem.setStock(stock);
-            newItem.setPortfolio(portfolio);
-            portfolio.getItems().add(newItem);
-            return newItem;
+        return CompletableFuture.runAsync(() -> {
+            Portfolio portfolio = getPortfolio(currentUserId);
+            PortfolioItem portfolioItem = portfolio.getItems().stream()
+                    .filter(item -> item.getStock().getTicker().equals(symbol))
+                    .findFirst()
+                    .orElseGet(() -> {
+                        PortfolioStock stock = createPortfolioStock(symbol).join();
+                        PortfolioItem newItem = new PortfolioItem();
+                        newItem.setStock(stock);
+                        newItem.setPortfolio(portfolio);
+                        portfolio.getItems().add(newItem);
+                        return newItem;
+                    });
+
+            BigDecimal cost = finalPrice.multiply(BigDecimal.valueOf(quantity));
+            User user = userRepository.findById(currentUserId)
+                    .orElseThrow(() -> new EntityNotFoundException("User not found with ID: " + currentUserId));
+            BigDecimal newBalance = user.getBalance().subtract(cost);
+            user.setBalance(newBalance);
+            userRepository.save(user);
+
+            portfolioItem.setQuantity(portfolioItem.getQuantity() + quantity);
+            portfolioItem.setPurchasePrice(finalPrice.doubleValue());
+
+            Transaction transaction = new Transaction();
+            transaction.setUser(user);
+            transaction.setDateTime(LocalDateTime.now());
+            transaction.setStockTicker(symbol);
+            transaction.setQuantity(quantity);
+            transaction.setPurchasePrice(finalPrice);
+            transaction.setTotalCost(cost);
+            transactionRepository.save(transaction);
+            portfolioRepository.save(portfolio);
         });
-
-        double cost = yahooStock.getPrice().doubleValue() * quantity;
-        User user = portfolio.getUser();
-        BigDecimal newBalance = user.getBalance().subtract(BigDecimal.valueOf(cost));
-        user.setBalance(newBalance);
-        userRepository.save(user);
-
-        portfolioItem.setQuantity(portfolioItem.getQuantity() + quantity);
-        portfolioItem.setPurchasePrice(yahooStock.getPrice().doubleValue());
-
-        Transaction transaction = new Transaction();
-        transaction.setUser(user);
-        transaction.setDateTime(LocalDateTime.now());
-        transaction.setStockTicker(symbol);
-        transaction.setQuantity(quantity);
-        transaction.setPurchasePrice(yahooStock.getPrice());
-        transaction.setTotalCost(BigDecimal.valueOf(cost));
-        transactionRepository.save(transaction);
-        portfolioRepository.save(portfolio);
     }
+
 
 //    public void addStockToPortfolio(String symbol, int quantity) {
 //        // Check if stock exists in PortfolioStockRepository
@@ -108,17 +111,15 @@ public class PortfolioService {
 //        portfolioRepository.save(portfolio);
 //    }
 
-    private PortfolioStock createPortfolioStock(String symbol) {
-        // Fetch stock data from YahooFinanceService
-        YahooStock yahooStock = yahooFinanceService.fetchStockData(symbol);
+    private CompletableFuture<PortfolioStock> createPortfolioStock(String symbol) {
+        return yahooFinanceService.fetchStockDataAsync(symbol).thenApply(yahooStock -> {
+            PortfolioStock portfolioStock = new PortfolioStock();
+            portfolioStock.setTicker(yahooStock.getTicker());
+            portfolioStock.setName(yahooStock.getName());
+            portfolioStock.setCurrentPrice(yahooStock.getPrice().intValue());
 
-        // Create or update PortfolioStock
-        PortfolioStock portfolioStock = new PortfolioStock();
-        portfolioStock.setTicker(yahooStock.getTicker());
-        portfolioStock.setName(yahooStock.getName());
-        portfolioStock.setCurrentPrice(yahooStock.getPrice().intValue());
-
-        return portfolioStockRepository.save(portfolioStock);
+            return portfolioStockRepository.save(portfolioStock);
+        });
     }
 
     private void calculatePortfolioStats(Portfolio portfolio) {
@@ -130,24 +131,86 @@ public class PortfolioService {
             totalCost += cost;
             totalValue += value;
         }
-        double totalChangePercent = totalCost != 0 ? ((totalValue - totalCost) / totalCost) * 100 : 0;
+        double totalChangePercent = totalCost > 0 ? (totalValue - totalCost) / totalCost * 100 : 0;
         portfolio.setTotalCost(totalCost);
         portfolio.setTotalValue(totalValue);
         portfolio.setTotalChangePercent(totalChangePercent);
+
+        portfolioRepository.save(portfolio);
     }
 
-    public void updatePortfolio(List<PortfolioItem> items) {
-        for (PortfolioItem updatedItem : items) {
-            PortfolioItem existingItem = portfolioItemRepository.findById(updatedItem.getId()).orElse(null);
-            if (existingItem != null) {
-                existingItem.setQuantity(updatedItem.getQuantity());
-                portfolioItemRepository.save(existingItem);
+    public boolean ownsStock(String tickerSymbol) {
+        Long currentUserId = getCurrentUser();
+        if (currentUserId == null) {
+            return false;
+        }
+        Portfolio portfolio = getPortfolio(currentUserId);
+        return portfolio.getItems().stream().anyMatch(item -> item.getStock().getTicker().equals(tickerSymbol) && item.getQuantity() > 0);
+    }
+
+    public void updateStockInPortfolio(Long userId, String symbol, int quantity, boolean isBuying) {
+        if (userId == null) {
+            throw new IllegalStateException("No user ID provided");
+        }
+
+        Portfolio portfolio = portfolioRepository.findByUserId(userId).orElseGet(() -> createPortfolio(userId));
+        Optional<PortfolioItem> existingItemOptional = portfolio.getItems().stream()
+                .filter(item -> item.getStock().getTicker().equals(symbol))
+                .findFirst();
+
+        if (isBuying) {
+            PortfolioItem portfolioItem = existingItemOptional.orElseGet(() -> {
+                CompletableFuture<PortfolioStock> stockFuture = createPortfolioStock(symbol);
+                PortfolioStock stock = stockFuture.join();
+                PortfolioItem newItem = new PortfolioItem();
+                newItem.setStock(stock);
+                newItem.setPortfolio(portfolio);
+                portfolio.getItems().add(newItem);
+                return newItem;
+            });
+            portfolioItem.setQuantity(portfolioItem.getQuantity() + quantity);
+        } else {
+            if (existingItemOptional.isPresent()) {
+                PortfolioItem portfolioItem = existingItemOptional.get();
+                if (portfolioItem.getQuantity() < quantity) {
+                    // User doesn't have enough stock to sell
+                    throw new IllegalArgumentException("Attempted to sell more units than owned (" + portfolioItem.getQuantity() + " available)");
+                }
+                int newQuantity = portfolioItem.getQuantity() - quantity;
+                portfolioItem.setQuantity(newQuantity);
+                if (newQuantity == 0) {
+                    // Remove the item if the quantity becomes 0
+                    portfolio.getItems().remove(portfolioItem);
+                    portfolioItemRepository.delete(portfolioItem);
+                }
+            } else {
+                // User doesn't own any of the stock they want to sell
+                throw new IllegalArgumentException("Attempted to sell stock not owned");
             }
         }
-        // Recalculate stats and update the portfolio
-        Portfolio portfolio = getPortfolio();
-        calculatePortfolioStats(portfolio);
+        // Save changes to the portfolio and its items
         portfolioRepository.save(portfolio);
+
+        // Update the user's balance and record the transaction
+        User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("User not found with ID: " + userId));
+        BigDecimal pricePerUnit = existingItemOptional.map(item -> BigDecimal.valueOf(item.getStock().getCurrentPrice())).orElse(BigDecimal.ZERO);
+        BigDecimal transactionCost = pricePerUnit.multiply(BigDecimal.valueOf(quantity));
+
+        if (isBuying) {
+            user.setBalance(user.getBalance().subtract(transactionCost));
+        } else {
+            user.setBalance(user.getBalance().add(transactionCost));
+        }
+        userRepository.save(user);
+
+        Transaction transaction = new Transaction();
+        transaction.setUser(user);
+        transaction.setDateTime(LocalDateTime.now());
+        transaction.setStockTicker(symbol);
+        transaction.setQuantity(quantity);
+        transaction.setPurchasePrice(pricePerUnit);
+        transaction.setTotalCost(isBuying ? transactionCost : transactionCost.negate());
+        transactionRepository.save(transaction);
     }
 
 //    // For editing the quantity of a user's item in their portfolio
@@ -187,13 +250,19 @@ public class PortfolioService {
         transactionRepository.save(transaction);
     }
 
-    private Long getCurrentUser() {
+    public Long getCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated()) {
             throw new IllegalStateException("No authenticated user found");
         }
-        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
-        return userDetails.getUser().getId();
+        // Check if the principal is an instance of CustomUserDetails
+        if (authentication.getPrincipal() instanceof CustomUserDetails) {
+            CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+            return userDetails.getUser().getId();
+        } else {
+            // TODO: Handle other cases like an anonymous user or different principal type
+            throw new IllegalStateException("Authenticated user is not of expected type");
+        }
     }
 
     public Optional<BigDecimal> getCurrentUserBalance() {

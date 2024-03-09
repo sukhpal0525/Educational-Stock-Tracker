@@ -18,5 +18,5 @@ public class PortfolioStock {
 
     private String name;
 
-    private int currentPrice;
+    private double currentPrice;
 }
