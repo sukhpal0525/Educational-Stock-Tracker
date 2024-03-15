@@ -43,33 +43,46 @@ public class PortfolioService {
         return portfolioRepository.save(newPortfolio);
     }
 
-    public CompletableFuture<Void> addStockToPortfolio(String symbol, int quantity, BigDecimal finalPrice) {
+    public CompletableFuture<Void> addStockToPortfolio(String symbol, int quantity, BigDecimal finalPrice, boolean isBuying) {
         Long currentUserId = getCurrentUser();
 
         return CompletableFuture.runAsync(() -> {
-            Portfolio portfolio = getPortfolio(currentUserId);
-            PortfolioItem portfolioItem = portfolio.getItems().stream()
-                    .filter(item -> item.getStock().getTicker().equals(symbol))
-                    .findFirst()
-                    .orElseGet(() -> {
-                        PortfolioStock stock = createPortfolioStock(symbol).join();
-                        PortfolioItem newItem = new PortfolioItem();
-                        newItem.setStock(stock);
-                        newItem.setPortfolio(portfolio);
-                        portfolio.getItems().add(newItem);
-                        return newItem;
-                    });
-
+            User user = userRepository.findById(currentUserId).orElseThrow(() -> new EntityNotFoundException("User not found with ID: " + currentUserId));
             BigDecimal cost = finalPrice.multiply(BigDecimal.valueOf(quantity));
-            User user = userRepository.findById(currentUserId)
-                    .orElseThrow(() -> new EntityNotFoundException("User not found with ID: " + currentUserId));
-            BigDecimal newBalance = user.getBalance().subtract(cost);
+
+            if (isBuying && user.getBalance().compareTo(cost) < 0) {
+                // Throw exception if user doesn't have required balance
+                throw new IllegalArgumentException("Insufficient balance to complete the purchase.");
+            }
+
+            Portfolio portfolio = getPortfolio(currentUserId);
+            PortfolioItem portfolioItem = portfolio.getItems().stream().filter(item -> item.getStock().getTicker().equals(symbol)).findFirst().orElseGet(() -> {
+                PortfolioStock stock = createPortfolioStock(symbol).join();
+                PortfolioItem newItem = new PortfolioItem();
+                newItem.setStock(stock);
+                newItem.setPortfolio(portfolio);
+                portfolio.getItems().add(newItem);
+                return newItem;
+            });
+
+            BigDecimal newBalance = isBuying ? user.getBalance().subtract(cost) : user.getBalance().add(cost);
             user.setBalance(newBalance);
             userRepository.save(user);
 
-            portfolioItem.setQuantity(portfolioItem.getQuantity() + quantity);
-            portfolioItem.setPurchasePrice(finalPrice.doubleValue());
+            // Adjust quantity based on buying or selling
+            int newQuantity = portfolioItem.getQuantity() + (isBuying ? quantity : -quantity);
+            if (newQuantity <= 0) {
+                portfolio.getItems().remove(portfolioItem);
+                portfolioItemRepository.delete(portfolioItem);
+            } else {
+                portfolioItem.setQuantity(newQuantity);
+                if (isBuying) {
+                    portfolioItem.setPurchasePrice(finalPrice.doubleValue());
+                }
+                portfolioRepository.save(portfolio);
+            }
 
+            // Record the transaction
             Transaction transaction = new Transaction();
             transaction.setUser(user);
             transaction.setDateTime(LocalDateTime.now());
@@ -77,11 +90,10 @@ public class PortfolioService {
             transaction.setQuantity(quantity);
             transaction.setPurchasePrice(finalPrice);
             transaction.setTotalCost(cost);
+            transaction.setTransactionType(isBuying ? "Buy" : "Sell");
             transactionRepository.save(transaction);
-            portfolioRepository.save(portfolio);
         });
     }
-
 
 //    public void addStockToPortfolio(String symbol, int quantity) {
 //        // Check if stock exists in PortfolioStockRepository
@@ -122,7 +134,7 @@ public class PortfolioService {
         });
     }
 
-    private void calculatePortfolioStats(Portfolio portfolio) {
+    public void calculatePortfolioStats(Portfolio portfolio) {
         double totalCost = 0.0;
         double totalValue = 0.0;
         for (PortfolioItem item : portfolio.getItems()) {
