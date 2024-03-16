@@ -17,7 +17,7 @@ public class YahooFinanceController {
 
     @Autowired private PortfolioService portfolioService;
     @Autowired private TransactionRepository transactionRepository;
-    private final YahooFinanceService yahooFinanceService;
+    @Autowired private YahooFinanceService yahooFinanceService;
 
     @Autowired
     public YahooFinanceController(YahooFinanceService yahooFinanceService) {
@@ -45,7 +45,7 @@ public class YahooFinanceController {
                 portfolioService.updateStockInPortfolio(userId, symbol, quantity, false); // False = selling
                 model.addAttribute("transactionSuccess", "Successfully sold " + quantity + " units of " + symbol + ".");
             } catch (IllegalArgumentException e) {
-                // Catch exception and set the model attribute for the error message
+                // Set the model attribute for the error message
                 model.addAttribute("transactionFailed", e.getMessage());
             }
         }
@@ -54,7 +54,7 @@ public class YahooFinanceController {
         if (authentication != null && authentication.isAuthenticated()) {
             Long userId = ((CustomUserDetails) authentication.getPrincipal()).getUser().getId();
             model.addAttribute("ownsStock", portfolioService.ownsStock(symbol));
-            model.addAttribute("transactions", transactionRepository.findByUserId(userId));
+            model.addAttribute("transactions", transactionRepository.findByUserIdAndStockTicker(userId, symbol));
             model.addAttribute("quantity", portfolioService.getPortfolio(userId).getItems());
             portfolioService.getCurrentUserBalance().ifPresent(balance -> model.addAttribute("balance", balance));
         }
