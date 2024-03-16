@@ -1,12 +1,12 @@
 package com.aston.stockapp.domain.portfolio;
 
 import com.aston.stockapp.api.YahooFinanceService;
-import com.aston.stockapp.api.YahooStock;
 import com.aston.stockapp.domain.transaction.Transaction;
 import com.aston.stockapp.domain.transaction.TransactionRepository;
 import com.aston.stockapp.user.CustomUserDetails;
 import com.aston.stockapp.user.User;
 import com.aston.stockapp.user.repository.UserRepository;
+import com.aston.stockapp.util.InsufficientBalanceException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import javax.persistence.EntityNotFoundException;
 import javax.transaction.Transactional;
 import java.math.BigDecimal;
+import java.text.DecimalFormat;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -45,16 +46,17 @@ public class PortfolioService {
 
     public CompletableFuture<Void> addStockToPortfolio(String symbol, int quantity, BigDecimal finalPrice, boolean isBuying) {
         Long currentUserId = getCurrentUser();
+        User user = userRepository.findById(currentUserId).orElseThrow(() -> new EntityNotFoundException("User not found with ID: " + currentUserId));
+        BigDecimal cost = finalPrice.multiply(BigDecimal.valueOf(quantity));
+        DecimalFormat moneyFormat = new DecimalFormat("#,##0.00");
+
+        if (isBuying && user.getBalance().compareTo(cost) < 0) {
+            BigDecimal missingMoney = cost.subtract(user.getBalance());
+            String formattedMissingMoney = moneyFormat.format(missingMoney);
+            throw new InsufficientBalanceException("Insufficient balance. You needed $" + formattedMissingMoney + " more to complete this purchase.");
+        }
 
         return CompletableFuture.runAsync(() -> {
-            User user = userRepository.findById(currentUserId).orElseThrow(() -> new EntityNotFoundException("User not found with ID: " + currentUserId));
-            BigDecimal cost = finalPrice.multiply(BigDecimal.valueOf(quantity));
-
-            if (isBuying && user.getBalance().compareTo(cost) < 0) {
-                // Throw exception if user doesn't have required balance
-                throw new IllegalArgumentException("Insufficient balance to complete the purchase.");
-            }
-
             Portfolio portfolio = getPortfolio(currentUserId);
             PortfolioItem portfolioItem = portfolio.getItems().stream().filter(item -> item.getStock().getTicker().equals(symbol)).findFirst().orElseGet(() -> {
                 PortfolioStock stock = createPortfolioStock(symbol).join();
