@@ -1,20 +1,149 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Index Page</title>
-  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Page</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.18/css/bootstrap-select.min.css">
+
+    <style>
+        .wide-container {
+            max-width: 90%;
+        }
+        .full-height {
+            height: auto;
+        }
+        .custom-margin-top {
+            margin-top: 3rem;
+        }
+    </style>
 </head>
 
-<body>
-<th:block th:insert="nav_bar :: navbar"></th:block>
+<div th:replace="fragments/navbar :: navbar"></div>
 
-<div class="container mt-5">
-  <h1>Welcome</h1>
-  <a href="/login" class="btn btn-primary">Login</a>
-  <a href="/register" class="btn btn-secondary">Register</a>
+<body>
+<div class="container-fluid bg-light wide-container full-height p-0">
+
+    <div class="p-5 rounded-3" style="background-color: #eaf4ff;">
+        <div class="container-fluid py-2">
+            <div class="row align-items-center">
+                <div class="col-12 col-lg-7">
+                    <h1 class="display-6 fw-bold">Virtual Portfolio Tracker</h1>
+                    <p class="fs-4 mt-4">Get started by searching for a stock below, or view your portfolio below.</p>
+                    <div class="d-flex align-items-center gap-5">
+                        <form class="d-flex" style="min-width: 500px" action="/stocks/search" method="get">
+                            <div class="input-group input-group-lg">
+                                <input class="form-control" type="search" placeholder="Enter a stock ticker or name:" aria-label="Search" name="query">
+                                <button class="btn btn-outline-secondary text-dark" type="submit" style="background-color: #f8f9fa;">Search</button>
+                            </div>
+                        </form>
+                        <a href="/portfolio" class="btn btn-primary btn-outline-dark text-light btn-lg">View Your Portfolio</a>
+                    </div>
+                </div>
+                <div class="col-lg-5">
+                    <div class="text-center">
+                        <img src="https://via.placeholder.com/700x300" class="img-fluid rounded shadow-sm">
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mt-5">
+                <div class="col-md-4">
+                    <h2 class="h4 fw-bold">Real Market Data</h2>
+                    <p>Access real market data to monitor your investments and adjust your strategy as the market changes.</p>
+                </div>
+                <div class="col-md-4">
+                    <h2 class="h4 fw-bold">Personalised Portfolio</h2>
+                    <p>View your portfolio's performance to help you make better investment decisions.</p>
+                </div>
+                <div class="col-md-4">
+                    <h2 class="h4 fw-bold">Risk-Free Environment</h2>
+                    <p>Gain insight into investing with a .</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+
+
+
+    <div class="container my-4">
+        <div class="row justify-content-center">
+            <!-- First Card -->
+            <div class="col-md-auto d-flex">
+                <div class="card" style="width: 24rem; height: 24rem;">
+                    <div class="card-body d-flex align-items-center justify-content-center">
+                        <p class="card-text">1</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Second Card -->
+            <div class="col-md-auto d-flex" style="margin-left: 30px; margin-right: 30px;">
+                <div class="card" style="width: 24rem; height: 24rem;">
+                    <div class="card-body d-flex align-items-center justify-content-center">
+                        <p class="card-text">2</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Third Card -->
+            <div class="col-md-auto d-flex">
+                <div class="card" style="width: 24rem; height: 24rem;">
+                    <div class="card-body d-flex align-items-center justify-content-center">
+                        <p class="card-text">3</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+
+<div th:replace="fragments/footer :: footer"></div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.18/js/bootstrap-select.min.js"></script>
+
+<script>
+    $(document).ready(function () {
+        // Initialize Bootstrap Select for enhanced dropdowns
+        $('.selectpicker').selectpicker();
+    });
+</script>
+
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!--            <div class="card mb-4">-->
+<!--                <div class="card-header">Company Summary</div>-->
+<!--                <div class="card-body">-->
+<!--                    <p class="card-text" style="text-align: justify;"></p>-->
+<!--                </div>-->
+<!--        </div>-->
+
+
+
+
+
+
+
+
+
+
