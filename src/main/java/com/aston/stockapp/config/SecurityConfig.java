@@ -38,7 +38,7 @@ public class SecurityConfig {
 //                .failureUrl("/login?error=true")
 //                .defaultSuccessUrl("/", true)
 //                .failureUrl("/login?error=true")
-//                .permitAll()yws
+//                .permitAll()
 //                .and()
 //            .logout()
 //                .permitAll();
