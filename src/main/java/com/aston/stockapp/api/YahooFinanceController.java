@@ -27,15 +27,14 @@ public class YahooFinanceController {
     @GetMapping("/{symbol}")
     public String getStockData(@PathVariable String symbol, @RequestParam(defaultValue = "10y") String range, @RequestParam(required = false) Integer quantity, Authentication authentication, Model model) {
         // Fetch and wait for all stock data asynchronously
-        CompletableFuture<YahooStock> stockFuture = yahooFinanceService.fetchStockDataAsync(symbol);
-        CompletableFuture<String> historicalDataFuture = yahooFinanceService.fetchHistoricalDataAsync(symbol, range);
-        CompletableFuture<YahooStock> stockInfoFuture = yahooFinanceService.fetchStockInfoAsync(symbol);
-        CompletableFuture.allOf(stockFuture, historicalDataFuture, stockInfoFuture).join();
+        YahooStock stockFuture = yahooFinanceService.fetchStockData(symbol);
+        String historicalDataFuture = yahooFinanceService.fetchHistoricalData(symbol, range);
+        YahooStock stockInfoFuture = yahooFinanceService.fetchStockInfo(symbol);
 
         // Populate model with stock data
-        model.addAttribute("stockData", stockFuture.join());
-        model.addAttribute("historicalDataJson", historicalDataFuture.join());
-        model.addAttribute("stockInfo", stockInfoFuture.join());
+        model.addAttribute("stockData", stockFuture);
+        model.addAttribute("historicalDataJson", historicalDataFuture);
+        model.addAttribute("stockInfo", stockInfoFuture);
 
         // Handle sell action if its present
         if (quantity != null && authentication != null && authentication.isAuthenticated()) {
@@ -69,21 +68,42 @@ public class YahooFinanceController {
 //    }
 
     @GetMapping("/search")
-    public CompletableFuture<String> searchStock(@RequestParam String query) {
+    public String searchStock(@RequestParam String query) {
         String ticker = yahooFinanceService.getTickerFromName(query);
         if (ticker == null) {
             ticker = query;
         }
-        return yahooFinanceService.fetchStockDataAsync(ticker).thenApply(stock -> {
+
+        try {
+            YahooStock stock = yahooFinanceService.fetchStockData(ticker);
             if (stock != null) {
                 return "redirect:/stocks/" + stock.getTicker();
             } else {
                 return "redirect:/stocks";
             }
-        }).exceptionally(ex -> {
-            // log.error("Error in searchStock: ", ex);
+        } catch (Exception ex) {
+            // Log error: log.error("Error in searchStock: ", ex);
             // TODO: Handle exception appropriately
             return "redirect:/stocks";
-        });
+        }
     }
+
+//    @GetMapping("/search")
+//    public CompletableFuture<String> searchStock(@RequestParam String query) {
+//        String ticker = yahooFinanceService.getTickerFromName(query);
+//        if (ticker == null) {
+//            ticker = query;
+//        }
+//        return yahooFinanceService.fetchStockDataAsync(ticker).thenApply(stock -> {
+//            if (stock != null) {
+//                return "redirect:/stocks/" + stock.getTicker();
+//            } else {
+//                return "redirect:/stocks";
+//            }
+//        }).exceptionally(ex -> {
+//            // log.error("Error in searchStock: ", ex);
+//            // TODO: Handle exception appropriately
+//            return "redirect:/stocks";
+//        });
+//    }
 }

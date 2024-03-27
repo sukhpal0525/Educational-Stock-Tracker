@@ -1,6 +1,7 @@
 package com.aston.stockapp.domain.portfolio;
 
 import com.aston.stockapp.api.YahooFinanceService;
+import com.aston.stockapp.api.YahooStock;
 import com.aston.stockapp.domain.transaction.Transaction;
 import com.aston.stockapp.domain.transaction.TransactionRepository;
 import com.aston.stockapp.user.CustomUserDetails;
@@ -44,58 +45,59 @@ public class PortfolioService {
         return portfolioRepository.save(newPortfolio);
     }
 
-    public CompletableFuture<Void> addStockToPortfolio(String symbol, int quantity, BigDecimal finalPrice, boolean isBuying) {
+    public void addStockToPortfolio(String symbol, int quantity, BigDecimal finalPrice, boolean isBuying) {
         Long currentUserId = getCurrentUser();
-        User user = userRepository.findById(currentUserId).orElseThrow(() -> new EntityNotFoundException("User not found with ID: " + currentUserId));
+        User user = userRepository.findById(currentUserId)
+                .orElseThrow(() -> new EntityNotFoundException("User not found with ID: " + currentUserId));
         BigDecimal cost = finalPrice.multiply(BigDecimal.valueOf(quantity));
-        DecimalFormat moneyFormat = new DecimalFormat("#,##0.00");
 
         if (isBuying && user.getBalance().compareTo(cost) < 0) {
             BigDecimal missingMoney = cost.subtract(user.getBalance());
+            DecimalFormat moneyFormat = new DecimalFormat("#,##0.00");
             String formattedMissingMoney = moneyFormat.format(missingMoney);
             throw new InsufficientBalanceException("Insufficient balance. You needed $" + formattedMissingMoney + " more to complete this purchase.");
         }
 
-        return CompletableFuture.runAsync(() -> {
-            Portfolio portfolio = getPortfolio(currentUserId);
-            PortfolioItem portfolioItem = portfolio.getItems().stream().filter(item -> item.getStock().getTicker().equals(symbol)).findFirst().orElseGet(() -> {
-                PortfolioStock stock = createPortfolioStock(symbol).join();
-                PortfolioItem newItem = new PortfolioItem();
-                newItem.setStock(stock);
-                newItem.setPortfolio(portfolio);
-                portfolio.getItems().add(newItem);
-                return newItem;
-            });
+        Portfolio portfolio = getPortfolio(currentUserId);
+        PortfolioItem portfolioItem = portfolio.getItems().stream()
+                .filter(item -> item.getStock().getTicker().equals(symbol))
+                .findFirst()
+                .orElseGet(() -> {
+                    PortfolioStock stock = createPortfolioStock(symbol); // Assuming this is now synchronous
+                    PortfolioItem newItem = new PortfolioItem();
+                    newItem.setStock(stock);
+                    newItem.setPortfolio(portfolio);
+                    portfolio.getItems().add(newItem);
+                    return newItem;
+                });
 
-            BigDecimal newBalance = isBuying ? user.getBalance().subtract(cost) : user.getBalance().add(cost);
-            user.setBalance(newBalance);
-            userRepository.save(user);
+        BigDecimal newBalance = isBuying ? user.getBalance().subtract(cost) : user.getBalance().add(cost);
+        user.setBalance(newBalance);
+        userRepository.save(user);
 
-            // Adjust quantity based on buying or selling
-            int newQuantity = portfolioItem.getQuantity() + (isBuying ? quantity : -quantity);
-            if (newQuantity <= 0) {
-                portfolio.getItems().remove(portfolioItem);
-                portfolioItemRepository.delete(portfolioItem);
-            } else {
-                portfolioItem.setQuantity(newQuantity);
-                if (isBuying) {
-                    portfolioItem.setPurchasePrice(finalPrice.doubleValue());
-                }
-                portfolioRepository.save(portfolio);
+        int newQuantity = portfolioItem.getQuantity() + (isBuying ? quantity : -quantity);
+        if (newQuantity <= 0) {
+            portfolio.getItems().remove(portfolioItem);
+            portfolioItemRepository.delete(portfolioItem);
+        } else {
+            portfolioItem.setQuantity(newQuantity);
+            if (isBuying) {
+                portfolioItem.setPurchasePrice(finalPrice.doubleValue());
             }
+            portfolioRepository.save(portfolio);
+        }
 
-            // Record the transaction
-            Transaction transaction = new Transaction();
-            transaction.setUser(user);
-            transaction.setDateTime(LocalDateTime.now());
-            transaction.setStockTicker(symbol);
-            transaction.setQuantity(quantity);
-            transaction.setPurchasePrice(finalPrice);
-            transaction.setTotalCost(cost);
-            transaction.setTransactionType(isBuying ? "Buy" : "Sell");
-            transactionRepository.save(transaction);
-        });
+        Transaction transaction = new Transaction();
+        transaction.setUser(user);
+        transaction.setDateTime(LocalDateTime.now());
+        transaction.setStockTicker(symbol);
+        transaction.setQuantity(Math.abs(quantity));
+        transaction.setPurchasePrice(finalPrice);
+        transaction.setTotalCost(cost);
+        transaction.setTransactionType(isBuying ? "Buy" : "Sell");
+        transactionRepository.save(transaction);
     }
+
 
 //    public void addStockToPortfolio(String symbol, int quantity) {
 //        // Check if stock exists in PortfolioStockRepository
@@ -125,15 +127,15 @@ public class PortfolioService {
 //        portfolioRepository.save(portfolio);
 //    }
 
-    private CompletableFuture<PortfolioStock> createPortfolioStock(String symbol) {
-        return yahooFinanceService.fetchStockDataAsync(symbol).thenApply(yahooStock -> {
-            PortfolioStock portfolioStock = new PortfolioStock();
-            portfolioStock.setTicker(yahooStock.getTicker());
-            portfolioStock.setName(yahooStock.getName());
-            portfolioStock.setCurrentPrice(yahooStock.getPrice().intValue());
+    private PortfolioStock createPortfolioStock(String symbol) {
+        // Assuming fetchStockData is the synchronous version of fetchStockDataAsync
+        YahooStock yahooStock = yahooFinanceService.fetchStockData(symbol);
+        PortfolioStock portfolioStock = new PortfolioStock();
+        portfolioStock.setTicker(yahooStock.getTicker());
+        portfolioStock.setName(yahooStock.getName());
+        portfolioStock.setCurrentPrice(yahooStock.getPrice().intValue());
 
-            return portfolioStockRepository.save(portfolioStock);
-        });
+        return portfolioStockRepository.save(portfolioStock);
     }
 
     public void calculatePortfolioStats(Portfolio portfolio) {
@@ -174,8 +176,7 @@ public class PortfolioService {
 
         if (isBuying) {
             PortfolioItem portfolioItem = existingItemOptional.orElseGet(() -> {
-                CompletableFuture<PortfolioStock> stockFuture = createPortfolioStock(symbol);
-                PortfolioStock stock = stockFuture.join();
+                PortfolioStock stock = createPortfolioStock(symbol); // Assuming createPortfolioStock is now synchronous
                 PortfolioItem newItem = new PortfolioItem();
                 newItem.setStock(stock);
                 newItem.setPortfolio(portfolio);
@@ -187,25 +188,21 @@ public class PortfolioService {
             if (existingItemOptional.isPresent()) {
                 PortfolioItem portfolioItem = existingItemOptional.get();
                 if (portfolioItem.getQuantity() < quantity) {
-                    // User doesn't have enough stock to sell
                     throw new IllegalArgumentException("Attempted to sell more units than owned (" + portfolioItem.getQuantity() + " available)");
                 }
                 int newQuantity = portfolioItem.getQuantity() - quantity;
                 portfolioItem.setQuantity(newQuantity);
                 if (newQuantity == 0) {
-                    // Remove the item if the quantity becomes 0
                     portfolio.getItems().remove(portfolioItem);
                     portfolioItemRepository.delete(portfolioItem);
                 }
             } else {
-                // User doesn't own any of the stock they want to sell
                 throw new IllegalArgumentException("Attempted to sell stock not owned");
             }
         }
-        // Save changes to the portfolio and its items
+
         portfolioRepository.save(portfolio);
 
-        // Update the user's balance and record the transaction
         User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("User not found with ID: " + userId));
         BigDecimal pricePerUnit = existingItemOptional.map(item -> BigDecimal.valueOf(item.getStock().getCurrentPrice())).orElse(BigDecimal.ZERO);
         BigDecimal transactionCost = pricePerUnit.multiply(BigDecimal.valueOf(quantity));

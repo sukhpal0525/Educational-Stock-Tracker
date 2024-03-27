@@ -50,25 +50,46 @@ public class PortfolioController {
             return "redirect:/login";
         }
     }
+
     @PostMapping("/portfolio/add")
     public String addToPortfolio(@RequestParam String symbol, @RequestParam int quantity, @RequestParam(required = false) BigDecimal customPrice, @RequestParam String action, RedirectAttributes redirectAttributes) {
         try {
-            BigDecimal finalPrice = customPrice != null && customPrice.compareTo(BigDecimal.ZERO) > 0 ? customPrice : yahooFinanceService.fetchStockDataAsync(symbol).join().getPrice();
+            BigDecimal finalPrice = customPrice != null && customPrice.compareTo(BigDecimal.ZERO) > 0 ? customPrice : yahooFinanceService.fetchStockData(symbol).getPrice();
             int adjustedQuantity = "sell".equalsIgnoreCase(action) ? -quantity : quantity;
+            boolean isBuying = "buy".equalsIgnoreCase(action);
 
-            CompletableFuture<Void> transactionResult = portfolioService.addStockToPortfolio(symbol, adjustedQuantity, finalPrice);
-            transactionResult.join();
+            portfolioService.addStockToPortfolio(symbol, adjustedQuantity, finalPrice, isBuying);
 
-            if ("sell".equalsIgnoreCase(action)) {
-                redirectAttributes.addFlashAttribute("transactionSuccess", "Success: Sold " + quantity + " of " + symbol + ".");
-            } else {
+            if (isBuying) {
                 redirectAttributes.addFlashAttribute("transactionSuccess", "Success: Bought " + quantity + " of " + symbol + ".");
+            } else {
+                redirectAttributes.addFlashAttribute("transactionSuccess", "Success: Sold " + quantity + " of " + symbol + ".");
             }
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("transactionError", "Error processing transaction for " + symbol + ": " + e.getMessage());
         }
         return "redirect:/stocks/" + symbol;
     }
+
+//    @PostMapping("/portfolio/add")
+//    public String addToPortfolio(@RequestParam String symbol, @RequestParam int quantity, @RequestParam(required = false) BigDecimal customPrice, @RequestParam String action, RedirectAttributes redirectAttributes) {
+//        try {
+//            BigDecimal finalPrice = customPrice != null && customPrice.compareTo(BigDecimal.ZERO) > 0 ? customPrice : yahooFinanceService.fetchStockData(symbol).getPrice();
+//            int adjustedQuantity = "sell".equalsIgnoreCase(action) ? -quantity : quantity;
+//
+//            CompletableFuture<Void> transactionResult = portfolioService.addStockToPortfolio(symbol, adjustedQuantity, finalPrice);
+//            transactionResult.join();
+//
+//            if ("sell".equalsIgnoreCase(action)) {
+//                redirectAttributes.addFlashAttribute("transactionSuccess", "Success: Sold " + quantity + " of " + symbol + ".");
+//            } else {
+//                redirectAttributes.addFlashAttribute("transactionSuccess", "Success: Bought " + quantity + " of " + symbol + ".");
+//            }
+//        } catch (Exception e) {
+//            redirectAttributes.addFlashAttribute("transactionError", "Error processing transaction for " + symbol + ": " + e.getMessage());
+//        }
+//        return "redirect:/stocks/" + symbol;
+//    }
 
     @GetMapping("/portfolio/edit")
     public String editPortfolio(Model model) {
