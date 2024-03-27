@@ -1,0 +1,63 @@
+<nav th:fragment="navbar" class="navbar navbar-expand-lg navbar-light bg-light border-bottom py-2">
+    <div class="container-fluid" style="max-width: 90%;">
+        <a class="navbar-brand fw-bold pe-3" href="#">Portfolio Tracker</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+            <div class="navbar-nav me-auto">
+                <a href="/portfolio" class="nav-link">Portfolio</a>
+                <a href="/orders" class="nav-link">My Orders</a>
+                <a href="/news" class="nav-link">News</a>
+            </div>
+
+            <form class="form-inline my-2 my-lg-0" action="/stocks/search" method="get">
+                <div class="input-group" style="min-width: 400px">
+                    <input class="form-control bg-light" type="search" placeholder="Enter a stock ticker or name:" aria-label="Search" name="query">
+                    <button type="submit" class="input-group-append btn bg-light" style="border: 1px solid #ced4da; border-left: none;">
+                        <img src="/icons/search-regular.svg" alt="Search Icon" style="height: 1.5em; width: 1.5em; vertical-align: middle;"/>
+                    </button>
+                </div>
+            </form>
+
+            <div class="navbar-nav ms-auto align-items-center">
+                <div th:if="${#authorization.expression('isAuthenticated()')}" class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        My Account
+                    </a>
+                    <ul class="dropdown-menu m-0 p-0" style="min-width: 250px; border-radius: .25rem;" aria-labelledby="navbarDropdownMenuLink">
+                        <div class="text-center py-2">
+                            <a class="dropdown-item my-1" href="#">
+                                <img src="/icons/portfolio-icon.svg" alt="Portfolio" class="mr-2" style="width: 20px; height: 20px;"> Portfolio
+                            </a>
+                            <a class="dropdown-item my-1" href="#">
+                                <img src="/icons/orders-icon.svg" alt="My Orders" class="mr-2" style="width: 20px; height: 20px;"> My Orders
+                            </a>
+                            <a class="dropdown-item my-1" href="#">
+                                <img src="/icons/profile-icon.svg" alt="Profile" class="mr-2" style="width: 20px; height: 20px;"> Profile
+                            </a>
+                        </div>
+                        <div class="dropdown-divider m-0"></div>
+                        <div class="text-center p-2" style="background-color: #f8f9fa; border-bottom-left-radius: .25rem; border-bottom-right-radius: .25rem;">
+                            <span>
+                                Balance: <span th:text="'$' + ${#numbers.formatDecimal(balance, 1, 'COMMA', 2, 'POINT')}"></span>
+                            </span>
+                        </div>
+                    </ul>
+                </div>
+<!--                <a class="nav-link p-0 me-3" href="#">-->
+<!--                    <img src="/icons/bell-solid.svg" alt="Notifications" style="height: 24px;">-->
+<!--                </a>-->
+                <div th:if="${!#authorization.expression('isAuthenticated()')}">
+                    <a class="btn btn-outline-primary btn-sm ms-2" href="/login">Login</a>
+                    <a class="btn btn-primary btn-sm ms-2" href="/register">Register</a>
+                </div>
+                <div th:if="${#authorization.expression('isAuthenticated()')}">
+                    <form th:action="@{/logout}" method="post" class="ms-2">
+                        <button type="submit" class="btn btn-outline-danger btn-sm">Logout</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</nav>
