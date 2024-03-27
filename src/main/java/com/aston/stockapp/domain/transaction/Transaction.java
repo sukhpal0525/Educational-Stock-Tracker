@@ -27,4 +27,5 @@ public class Transaction {
     private int quantity;
     private BigDecimal purchasePrice;
     private BigDecimal totalCost;
+    private String transactionType;
 }
