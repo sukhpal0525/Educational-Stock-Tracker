@@ -24,4 +24,6 @@ public class PortfolioItem {
     private int quantity;
 
     private double purchasePrice;
+
+    private boolean isEditing;
 }
