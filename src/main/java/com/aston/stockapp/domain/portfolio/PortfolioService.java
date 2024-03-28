@@ -19,7 +19,6 @@ import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.time.LocalDateTime;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 
 @Service
 @Transactional
@@ -47,9 +46,8 @@ public class PortfolioService {
 
     public void addStockToPortfolio(String symbol, int quantity, BigDecimal finalPrice, boolean isBuying) {
         Long currentUserId = getCurrentUser();
-        User user = userRepository.findById(currentUserId)
-                .orElseThrow(() -> new EntityNotFoundException("User not found with ID: " + currentUserId));
-        BigDecimal cost = finalPrice.multiply(BigDecimal.valueOf(quantity));
+        User user = userRepository.findById(currentUserId).orElseThrow(() -> new EntityNotFoundException("User not found with ID: " + currentUserId));
+        BigDecimal cost = finalPrice.multiply(new BigDecimal(quantity));
 
         if (isBuying && user.getBalance().compareTo(cost) < 0) {
             BigDecimal missingMoney = cost.subtract(user.getBalance());
@@ -63,29 +61,45 @@ public class PortfolioService {
                 .filter(item -> item.getStock().getTicker().equals(symbol))
                 .findFirst()
                 .orElseGet(() -> {
-                    PortfolioStock stock = createPortfolioStock(symbol); // Assuming this is now synchronous
+                    if (!isBuying) {
+                        throw new IllegalArgumentException("Cannot sell stock not owned.");
+                    }
+                    PortfolioStock stock = createPortfolioStock(symbol);
                     PortfolioItem newItem = new PortfolioItem();
                     newItem.setStock(stock);
+                    newItem.setQuantity(0);
                     newItem.setPortfolio(portfolio);
                     portfolio.getItems().add(newItem);
                     return newItem;
                 });
 
-        BigDecimal newBalance = isBuying ? user.getBalance().subtract(cost) : user.getBalance().add(cost);
-        user.setBalance(newBalance);
-        userRepository.save(user);
+        if (isBuying) {
+            portfolioItem.setQuantity(portfolioItem.getQuantity() + quantity);
+            // Convert BigDecimal to double for setting purchase price
+            portfolioItem.setPurchasePrice(finalPrice.doubleValue());
+            user.setBalance(user.getBalance().subtract(cost));
+        } else {
+            // Check if the user does not own the stock at all
+            if (portfolioItem.getQuantity() == 0) {
+                throw new IllegalArgumentException("Cannot sell stock not owned.");
+            }
+            // Check if the user is trying to sell more than they own
+            if (portfolioItem.getQuantity() < Math.abs(quantity)) {
+                throw new IllegalArgumentException("Cannot sell more than owned.");
+            }
+            portfolioItem.setQuantity(portfolioItem.getQuantity() - Math.abs(quantity));
+            BigDecimal saleProceeds = finalPrice.multiply(new BigDecimal(Math.abs(quantity)));
+            user.setBalance(user.getBalance().add(saleProceeds));
+        }
 
-        int newQuantity = portfolioItem.getQuantity() + (isBuying ? quantity : -quantity);
-        if (newQuantity <= 0) {
+        if (portfolioItem.getQuantity() <= 0) {
             portfolio.getItems().remove(portfolioItem);
             portfolioItemRepository.delete(portfolioItem);
         } else {
-            portfolioItem.setQuantity(newQuantity);
-            if (isBuying) {
-                portfolioItem.setPurchasePrice(finalPrice.doubleValue());
-            }
-            portfolioRepository.save(portfolio);
+            portfolioItemRepository.save(portfolioItem);
         }
+
+        userRepository.save(user);
 
         Transaction transaction = new Transaction();
         transaction.setUser(user);
@@ -93,7 +107,7 @@ public class PortfolioService {
         transaction.setStockTicker(symbol);
         transaction.setQuantity(Math.abs(quantity));
         transaction.setPurchasePrice(finalPrice);
-        transaction.setTotalCost(cost);
+        transaction.setTotalCost(cost.abs());
         transaction.setTransactionType(isBuying ? "Buy" : "Sell");
         transactionRepository.save(transaction);
     }
@@ -128,7 +142,6 @@ public class PortfolioService {
 //    }
 
     private PortfolioStock createPortfolioStock(String symbol) {
-        // Assuming fetchStockData is the synchronous version of fetchStockDataAsync
         YahooStock yahooStock = yahooFinanceService.fetchStockData(symbol);
         PortfolioStock portfolioStock = new PortfolioStock();
         portfolioStock.setTicker(yahooStock.getTicker());
@@ -176,7 +189,7 @@ public class PortfolioService {
 
         if (isBuying) {
             PortfolioItem portfolioItem = existingItemOptional.orElseGet(() -> {
-                PortfolioStock stock = createPortfolioStock(symbol); // Assuming createPortfolioStock is now synchronous
+                PortfolioStock stock = createPortfolioStock(symbol);
                 PortfolioItem newItem = new PortfolioItem();
                 newItem.setStock(stock);
                 newItem.setPortfolio(portfolio);

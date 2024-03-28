@@ -3,6 +3,7 @@ package com.aston.stockapp.domain.portfolio;
 import com.aston.stockapp.api.YahooFinanceService;
 import com.aston.stockapp.user.CustomUserDetails;
 import com.aston.stockapp.user.User;
+import com.aston.stockapp.user.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import javax.persistence.EntityNotFoundException;
 import java.math.BigDecimal;
 import java.util.concurrent.CompletableFuture;
 
@@ -20,6 +22,8 @@ public class PortfolioController {
 
     @Autowired private PortfolioService portfolioService;
     @Autowired private YahooFinanceService yahooFinanceService;
+    @Autowired private PortfolioItemRepository portfolioItemRepository;
+    @Autowired private UserRepository userRepository;
 
     @GetMapping("/portfolio")
     public String viewPortfolio(Model model, Authentication authentication, RedirectAttributes redirectAttributes) {
@@ -60,16 +64,14 @@ public class PortfolioController {
 
             portfolioService.addStockToPortfolio(symbol, adjustedQuantity, finalPrice, isBuying);
 
-            if (isBuying) {
-                redirectAttributes.addFlashAttribute("transactionSuccess", "Success: Bought " + quantity + " of " + symbol + ".");
-            } else {
-                redirectAttributes.addFlashAttribute("transactionSuccess", "Success: Sold " + quantity + " of " + symbol + ".");
-            }
+            String transactionType = isBuying ? "Bought" : "Sold";
+            redirectAttributes.addFlashAttribute("transactionSuccess", "Success: " + transactionType + " " + quantity + " of this stock (" + symbol + ").");
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("transactionError", "Error processing transaction for " + symbol + ": " + e.getMessage());
+            redirectAttributes.addFlashAttribute("transactionFailed", "Error: " + e.getMessage());
         }
         return "redirect:/stocks/" + symbol;
     }
+
 
 //    @PostMapping("/portfolio/add")
 //    public String addToPortfolio(@RequestParam String symbol, @RequestParam int quantity, @RequestParam(required = false) BigDecimal customPrice, @RequestParam String action, RedirectAttributes redirectAttributes) {
@@ -92,19 +94,74 @@ public class PortfolioController {
 //    }
 
     @GetMapping("/portfolio/edit")
-    public String editPortfolio(Model model) {
+    public String editPortfolio(@RequestParam("id") Long itemId, Model model) {
         try {
             Long userId = portfolioService.getCurrentUser();
             Portfolio portfolio = portfolioService.getPortfolio(userId);
+
+            portfolioService.calculatePortfolioStats(portfolio);
+
             model.addAttribute("portfolio", portfolio);
+            model.addAttribute("editingItemId", itemId);
+
+            // Add recalculated stats to the model
             model.addAttribute("totalCost", portfolio.getTotalCost());
             model.addAttribute("totalValue", portfolio.getTotalValue());
             model.addAttribute("totalChangePercent", portfolio.getTotalChangePercent());
-            model.addAttribute("isEditing", true);
+
+            portfolioService.getCurrentUserBalance().ifPresent(balance -> model.addAttribute("balance", balance));
+
             return "portfolio";
         } catch (IllegalStateException e) {
-            // TODO: Log the error or handle it
             return "redirect:/login";
+        }
+    }
+
+//    @GetMapping("/portfolio/edit")
+//    public String editPortfolio(Model model) {
+//        try {
+//            Long userId = portfolioService.getCurrentUser();
+//            Portfolio portfolio = portfolioService.getPortfolio(userId);
+//            model.addAttribute("portfolio", portfolio);
+//            model.addAttribute("totalCost", portfolio.getTotalCost());
+//            model.addAttribute("totalValue", portfolio.getTotalValue());
+//            model.addAttribute("totalChangePercent", portfolio.getTotalChangePercent());
+//            model.addAttribute("isEditing", true);
+//            return "portfolio";
+//        } catch (IllegalStateException e) {
+//            return "redirect:/login";
+//        }
+//    }
+
+    @PostMapping("/portfolio/save")
+    public String savePortfolioItem(@RequestParam("id") Long itemId, @RequestParam("newQuantity") int newQuantity, @RequestParam("newPurchasePrice") double newPurchasePrice, RedirectAttributes redirectAttributes) {
+        try {
+            PortfolioItem item = portfolioItemRepository.findById(itemId).orElseThrow(() -> new EntityNotFoundException("Portfolio item not found"));
+            double costDifference = (newPurchasePrice - item.getPurchasePrice()) * newQuantity;
+
+            // Retrieve the user and adjust balance based on the new price
+            User user = item.getPortfolio().getUser();
+            BigDecimal balanceAdjustment = BigDecimal.valueOf(costDifference);
+
+            if(costDifference > 0) {
+                // If cost difference is positive, the new purchase price is higher so subtract from balance
+                user.setBalance(user.getBalance().subtract(balanceAdjustment));
+            } else {
+                // If the cost difference is <= 0, the new purchase price is lower or equal so add the difference to balance
+                user.setBalance(user.getBalance().add(balanceAdjustment.abs()));
+            }
+
+            // Update item with new quantity and purchase price
+            item.setQuantity(newQuantity);
+            item.setPurchasePrice(newPurchasePrice);
+            portfolioItemRepository.save(item);
+            userRepository.save(user);
+
+            redirectAttributes.addFlashAttribute("successMessage", "Portfolio updated successfully.");
+            return "redirect:/portfolio";
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Error updating portfolio item: " + e.getMessage());
+            return "redirect:/portfolio";
         }
     }
 
