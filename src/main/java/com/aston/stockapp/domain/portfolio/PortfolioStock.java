@@ -19,4 +19,6 @@ public class PortfolioStock {
     private String name;
 
     private double currentPrice;
+
+    private String sector;
 }

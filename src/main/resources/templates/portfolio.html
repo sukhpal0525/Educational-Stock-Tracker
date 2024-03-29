@@ -29,6 +29,13 @@
         .card-header small {
             margin-bottom: 0.5rem;
         }
+        .custom-button {
+            height: 1.65rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.375rem 0.75rem;
+        }
     </style>
 </head>
 
@@ -118,42 +125,10 @@
                                     <button type="submit" class="btn btn-primary btn-sm" title="Save">Save</button>
                                 </form>
                                 <a th:if="${editingItemId != item.id}" th:href="@{/portfolio/edit/(id=${item.id})}" class="bi bi-pencil-square mx-1" title="Edit"></a>
-                                <a th:if="${editingItemId != item.id}" th:href="@{/portfolio/delete/(id=${item.id})}" class="bi bi-trash mx-1" title="Delete"></a>
+                                <a th:if="${editingItemId != item.id}" href="javascript:void(0)" class="bi bi-trash mx-1" title="Delete" th:data-item-id="${item.id}" data-bs-toggle="modal" data-bs-target="#deleteConfirmationModal"></a>
                             </td>
                         </tr>
-
-<!--                        <tr th:each="item, iterStat : ${portfolio.items}">-->
-<!--                            <td th:text="${item.stock.name}"></td>-->
-<!--                            <td>-->
-<!--                                <span th:if="${editingItemId != item.id}" th:text="${item.quantity}"></span>-->
-<!--                                <input th:if="${editingItemId == item.id}" type="number" th:value="${item.quantity}" th:name="'quantity-' + ${item.id}" />-->
-<!--                            </td>-->
-<!--                            <td>-->
-<!--                                <span th:if="${editingItemId != item.id}" th:text="${#numbers.formatDecimal(item.purchasePrice, 1, 'COMMA', 2, 'POINT')}"></span>-->
-<!--                                <input th:if="${editingItemId == item.id}" type="text" th:value="${item.purchasePrice}" th:name="'purchasePrice-' + ${item.id}" />-->
-<!--                            </td>-->
-<!--                            <td th:text="${#numbers.formatDecimal(item.quantity * item.purchasePrice, 1, 'COMMA', 2, 'POINT')}"></td>-->
-<!--                            <td th:text="${#numbers.formatDecimal(item.quantity * item.stock.currentPrice, 1, 'COMMA', 2, 'POINT')}"></td>-->
-<!--                            <td th:text="${#numbers.formatDecimal((item.stock.currentPrice - item.purchasePrice) * item.quantity, 1, 'COMMA', 2, 'POINT')}"></td>-->
-<!--                            <td>-->
-<!--                                <a th:if="${editingItemId != item.id}" th:href="@{/portfolio/edit/(id=${item.id})}" class="bi bi-pencil-square" title="Edit"></a>-->
-<!--                                <a th:if="${editingItemId == item.id}" th:href="@{/portfolio/save/(id=${item.id})}" class="btn btn-primary" title="Save">Save</a>-->
-<!--                                <a href="@{/portfolio/delete/(id=${item.id})}" class="bi bi-trash" title="Delete"></a>-->
-<!--                            </td>-->
-<!--                        </tr>-->
-<!--                        <tr th:each="item, iterStat : ${portfolio.items}">-->
-<!--                            <td th:text="${item.stock.name}"></td>-->
-<!--                            <td th:text="${item.quantity}"></td>-->
-<!--                            <td th:text="${#numbers.formatDecimal(item.purchasePrice, 1, 'COMMA', 2, 'POINT')}"></td>-->
-<!--                            <td th:text="${#numbers.formatDecimal(item.quantity * item.purchasePrice, 1, 'COMMA', 2, 'POINT')}"></td>-->
-<!--                            <td th:text="${#numbers.formatDecimal(item.quantity * item.stock.currentPrice, 1, 'COMMA', 2, 'POINT')}"></td>-->
-<!--                            <td th:text="${#numbers.formatDecimal((item.stock.currentPrice - item.purchasePrice) * item.quantity, 1, 'COMMA', 2, 'POINT')}"></td>-->
-<!--                            <td>-->
-<!--                                <i class="bi bi-pencil-square" title="Edit"></i> |-->
-<!--                                <i class="bi bi-trash" title="Delete"></i>-->
-<!--                            </td>-->
-<!--                        </tr>-->
-                        <tr th:unless="${portfolio.items.size() > 0}" th:each="i : ${#numbers.sequence(1, 12)}">
+                        <tr th:each="i : ${#numbers.sequence(1, 12)}">
                             <td>&nbsp;</td>
                             <td>&nbsp;</td>
                             <td>&nbsp;</td>
@@ -165,38 +140,178 @@
                         </tbody>
                     </table>
                 </div>
-                <nav aria-label="Page navigation" class="text-end pe-4">
-                    <ul class="pagination pagination-sm justify-content-end mb-4">
-                        <li class="page-item"><a class="page-link" href="#">Previous</a></li>
-                        <li class="page-item active" aria-current="page"><a class="page-link" href="#">1</a></li>
-                        <li class="page-item"><a class="page-link" href="#">2</a></li>
-                        <li class="page-item"><a class="page-link" href="#">3</a></li>
-                        <li class="page-item"><a class="page-link" href="#">Next</a></li>
-                    </ul>
-                </nav>
+                <div class="d-flex justify-content-between align-items-end pt-4 px-4 pb-4">
+                    <form th:action="@{/portfolio/updatePrices}" method="post" class="mb-4">
+                        <button type="submit" class="btn btn-outline-secondary text-dark custom-button">Refresh Prices</button>
+                    </form>
+                    <nav aria-label="Page navigation" class="mb-4">
+                        <ul class="pagination pagination-sm mb-0">
+                            <li class="page-item"><a class="page-link" href="#">Previous</a></li>
+                            <li class="page-item active" aria-current="page"><a class="page-link" href="#">1</a></li>
+                            <li class="page-item"><a class="page-link" href="#">2</a></li>
+                            <li class="page-item"><a class="page-link" href="#">3</a></li>
+                            <li class="page-item"><a class="page-link" href="#">Next</a></li>
+                        </ul>
+                    </nav>
+                </div>
             </div>
         </div>
 
         <div class="ms-auto" style="width: 22rem;">
-            <!-- Balance Card -->
-            <div class="card mb-3" style="height: 8rem;">
-                <div class="card-header"></div>
-                <div class="card-body">
-                </div>
-            </div>
-            <!-- Buy/Sell Card -->
-            <div class="card" style="height: 40rem;">
-                <div class="card-header">
 
-                </div>
+            <div class="card" style="height: 49rem;">
+                <div class="card-header">Portfolio Analysis</div>
                 <div class="card-body">
+                    <div class="text-center mb-4">
+                        <h6 class="mb-3">Sector Allocation</h6>
+                        <div id="sectorDistributionChart"></div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- PortfolioItem stock delete confirmation modal -->
+    <div class="modal fade" id="deleteConfirmationModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteModalLabel">Remove Stock?</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    Are you sure you want to remove this stock from your portfolio?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+                    <button type="button" class="btn btn-danger" id="confirmDelete" data-bs-dismiss="modal">Yes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var deleteButton = document.getElementById('confirmDelete');
+
+        deleteButton.addEventListener('click', function () {
+            var modal = document.getElementById('deleteConfirmationModal');
+            var itemId = modal.getAttribute('data-item-id');
+            var bsModal = bootstrap.Modal.getInstance(modal);
+            bsModal.hide();
+
+            // Redirect after a short delay to ensure modal animation completes
+            setTimeout(function() {
+                window.location.href = '/portfolio/delete/' + itemId;
+            }, 500);
+        });
+
+        var modal = document.getElementById('deleteConfirmationModal');
+        modal.addEventListener('show.bs.modal', function (event) {
+            var button = event.relatedTarget; // Button that triggered the modal
+            var itemId = button.getAttribute('data-item-id');
+            modal.setAttribute('data-item-id', itemId); // Update modal's item ID
+        });
+    });
+</script>
+
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    const hasData = [[${hasSectorData}]];
+    let sectors, percentages, chartColors;
+    if (hasData) {
+        sectors = /*[[${sectorDistribution.keySet()}]]*/ [];
+        percentages = /*[[${sectorDistribution.values()}]]*/ [];
+        chartColors = ['#008FFB', '#00E396', '#FEB019', '#FF4560', '#775DD0', '#546E7A', '#26a69a', '#D10CE8'];
+    } else {
+        sectors = ['No Data'];
+        percentages = [100]; // Show 100% of "No Data"
+        chartColors = ['#A9A9A9']; // Grey (No Data)
+    }
+
+    const options = {
+        series: percentages,
+        chart: {
+            type: 'donut',
+            height: 250,
+            toolbar: {
+                show: true,
+                tools: {
+                    download: '<i class="bi bi-download"></i>',
+                    zoom: '<i class="bi bi-zoom-in"></i>',
+                    zoomout: '<i class="bi bi-zoom-out"></i>',
+                    pan: '<i class="bi bi-arrows-move"></i>',
+                    reset: '<i class="bi bi-arrow-counterclockwise"></i>',
+                    customIcons: []
+                }
+            }
+        },
+        labels: sectors,
+        plotOptions: {
+            pie: {
+                donut: {
+                    labels: {
+                        show: true,
+                        total: {
+                            show: true,
+                            showAlways: true,
+                            label: 'Total',
+                            fontSize: '22px',
+                            fontFamily: 'Helvetica, Arial, sans-serif',
+                            fontWeight: 600,
+                            color: '#373d3f',
+                            formatter: function (w) {
+                                return w.globals.seriesTotals.reduce((a, b) => {
+                                    return a + b
+                                }, 0)
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        legend: {
+            position: 'bottom',
+            horizontalAlign: 'center',
+            fontSize: '14px',
+            markers: {
+                width: 10,
+                height: 10
+            },
+        },
+        dataLabels: {
+            enabled: true
+        },
+        tooltip: {
+            y: {
+                formatter: function(value) {
+                    return hasData ? `${value}%` : 'N/A';
+                }
+            }
+        },
+        colors: chartColors,
+        responsive: [{
+            breakpoint: 480,
+            options: {
+                chart: {
+                    width: 200
+                },
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }]
+    };
+
+    const chart = new ApexCharts(document.querySelector("#sectorDistributionChart"), options);
+    chart.render();
+    /*]]>*/
+</script>
 
 </body>
 </html>

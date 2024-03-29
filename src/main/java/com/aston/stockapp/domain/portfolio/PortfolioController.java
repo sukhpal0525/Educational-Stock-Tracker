@@ -9,12 +9,15 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.persistence.EntityNotFoundException;
 import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 @Controller
@@ -23,6 +26,7 @@ public class PortfolioController {
     @Autowired private PortfolioService portfolioService;
     @Autowired private YahooFinanceService yahooFinanceService;
     @Autowired private PortfolioItemRepository portfolioItemRepository;
+    @Autowired private PortfolioUpdateService portfolioUpdateService;
     @Autowired private UserRepository userRepository;
 
     @GetMapping("/portfolio")
@@ -34,14 +38,19 @@ public class PortfolioController {
                 CustomUserDetails userDetails = (CustomUserDetails) principal;
                 Long currentUserId = userDetails.getUser().getId();
 
-                // Fetch portfolio for the logged in user and add to model
-                Portfolio portfolio = portfolioService.getPortfolio(currentUserId);
+                Portfolio portfolio = portfolioService.getPortfolio(currentUserId); //Fetch portfolio for the logged in user and add to model
+                Map<String, BigDecimal> sectorDistribution = portfolioService.getPortfolioSectorDistribution(currentUserId);
+                boolean hasSectorData = sectorDistribution != null && !sectorDistribution.isEmpty() && !portfolio.getItems().isEmpty();
+
                 model.addAttribute("portfolio", portfolio);
                 model.addAttribute("totalCost", portfolio.getTotalCost());
                 model.addAttribute("totalValue", portfolio.getTotalValue());
                 model.addAttribute("totalChangePercent", portfolio.getTotalChangePercent());
                 portfolioService.getCurrentUserBalance().ifPresent(balance -> model.addAttribute("balance", balance));
+                model.addAttribute("portfolio", portfolio);
                 model.addAttribute("isEditing", false);
+                model.addAttribute("hasSectorData", hasSectorData);
+                model.addAttribute("sectorDistribution", sectorDistribution);
                 return "portfolio";
             } else {
                 // if the principal is not expected type for some reason, redirect to login
@@ -101,15 +110,19 @@ public class PortfolioController {
 
             portfolioService.calculatePortfolioStats(portfolio);
 
+            // Calculate sector distribution for the portfolio
+            Map<String, BigDecimal> sectorDistribution = portfolioService.getPortfolioSectorDistribution(userId);
+            boolean hasSectorData = sectorDistribution != null && !sectorDistribution.isEmpty() && !portfolio.getItems().isEmpty();
+
             model.addAttribute("portfolio", portfolio);
             model.addAttribute("editingItemId", itemId);
-
-            // Add recalculated stats to the model
             model.addAttribute("totalCost", portfolio.getTotalCost());
             model.addAttribute("totalValue", portfolio.getTotalValue());
             model.addAttribute("totalChangePercent", portfolio.getTotalChangePercent());
-
             portfolioService.getCurrentUserBalance().ifPresent(balance -> model.addAttribute("balance", balance));
+            model.addAttribute("hasSectorData", hasSectorData);
+            model.addAttribute("sectorDistribution", sectorDistribution);
+            model.addAttribute("isEditing", true);
 
             return "portfolio";
         } catch (IllegalStateException e) {
@@ -188,6 +201,25 @@ public class PortfolioController {
 //
 //        return "redirect:/stocks/" + symbol;
 //    }
+
+    @PostMapping("/portfolio/updatePrices")
+    public String updateStockPricesManually() {
+        portfolioUpdateService.manualUpdateStockPrices();
+        return "redirect:/portfolio";
+    }
+
+    @GetMapping("/portfolio/delete/{id}")
+    public String deletePortfolioItem(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        try {
+            System.out.println("Deleting item with ID: " + id);
+            portfolioService.deletePortfolioItem(id);
+            redirectAttributes.addFlashAttribute("successMessage", "Stock sold successfully.");
+        } catch (Exception e) {
+            System.out.println("Error removing stock: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("errorMessage", "Error removing stock: " + e.getMessage());
+        }
+        return "redirect:/portfolio";
+    }
 
     @PostMapping("/portfolio/update")
     public String updatePortfolioItem(@RequestParam("itemId") Long itemId, @RequestParam("quantity") int quantity) {

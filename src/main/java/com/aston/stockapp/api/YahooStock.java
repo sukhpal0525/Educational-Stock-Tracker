@@ -59,7 +59,7 @@ public class YahooStock {
     private int priceHint;
     private boolean hasPrePostMarketData;
 
-    public YahooStock(String ticker, String name, BigDecimal price, String fullExchangeName, String exchange, long regularMarketVolume, BigDecimal regularMarketDayHigh, BigDecimal regularMarketDayLow, BigDecimal marketCap, boolean tradeable, BigDecimal regularMarketChangePercent, double preMarketChange, double preMarketChangePercent, double preMarketPrice, String preMarketTime, String postMarketChange, double postMarketChangePercent, double postMarketPrice, String postMarketTime, String currency, String marketState, double bid, double ask, int bidSize, int askSize, double fiftyTwoWeekLow, double fiftyTwoWeekHigh, double trailingPE, double dividendYield, double epsTrailingTwelveMonths, double bookValue, double fiftyDayAverage, double twoHundredDayAverage, long sharesOutstanding, double forwardPE, double priceToBook, int priceHint, boolean hasPrePostMarketData) {
+    public YahooStock(String ticker, String name, BigDecimal price, String fullExchangeName, String exchange, long regularMarketVolume, BigDecimal regularMarketDayHigh, BigDecimal regularMarketDayLow, BigDecimal marketCap, boolean tradeable, BigDecimal regularMarketChangePercent, double preMarketChange, double preMarketChangePercent, double preMarketPrice, String preMarketTime, String postMarketChange, double postMarketChangePercent, double postMarketPrice, String postMarketTime, String currency, String marketState, double bid, double ask, int bidSize, int askSize, double fiftyTwoWeekLow, double fiftyTwoWeekHigh, double trailingPE, double dividendYield, double epsTrailingTwelveMonths, double bookValue, double fiftyDayAverage, double twoHundredDayAverage, long sharesOutstanding, double forwardPE, double priceToBook, int priceHint, boolean hasPrePostMarketData, String sector) {
         this.ticker = ticker;
         this.name = name;
         this.price = price;
@@ -98,6 +98,7 @@ public class YahooStock {
         this.priceToBook = priceToBook;
         this.priceHint = priceHint;
         this.hasPrePostMarketData = hasPrePostMarketData;
+        this.sector = sector;
     }
 
     public YahooStock(String address, String city, String state, String zip, String country, String phone, String website, String industry, String sector, String longBusinessSummary) {

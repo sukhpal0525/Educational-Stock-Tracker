@@ -16,8 +16,11 @@ import org.springframework.stereotype.Service;
 import javax.persistence.EntityNotFoundException;
 import javax.transaction.Transactional;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -141,14 +144,21 @@ public class PortfolioService {
 //        portfolioRepository.save(portfolio);
 //    }
 
-    private PortfolioStock createPortfolioStock(String symbol) {
-        YahooStock yahooStock = yahooFinanceService.fetchStockData(symbol);
-        PortfolioStock portfolioStock = new PortfolioStock();
-        portfolioStock.setTicker(yahooStock.getTicker());
-        portfolioStock.setName(yahooStock.getName());
-        portfolioStock.setCurrentPrice(yahooStock.getPrice().intValue());
+    public PortfolioStock createPortfolioStock(String symbol) {
+        YahooStock yahooStockData = yahooFinanceService.fetchStockData(symbol);
 
-        return portfolioStockRepository.save(portfolioStock);
+        YahooStock yahooStockInfo = yahooFinanceService.fetchStockInfo(symbol);
+
+        PortfolioStock portfolioStock = new PortfolioStock();
+        portfolioStock.setTicker(yahooStockData.getTicker());
+        portfolioStock.setName(yahooStockData.getName());
+        portfolioStock.setCurrentPrice(yahooStockData.getPrice().doubleValue());
+
+        portfolioStock.setSector(yahooStockInfo.getSector());
+
+        PortfolioStock savedStock = portfolioStockRepository.save(portfolioStock);
+        System.out.println("Saved stock: " + savedStock.getName() + " with sector: " + savedStock.getSector());
+        return savedStock;
     }
 
     public void calculatePortfolioStats(Portfolio portfolio) {
@@ -175,6 +185,34 @@ public class PortfolioService {
         }
         Portfolio portfolio = getPortfolio(currentUserId);
         return portfolio.getItems().stream().anyMatch(item -> item.getStock().getTicker().equals(tickerSymbol) && item.getQuantity() > 0);
+    }
+
+    @Transactional
+    public void deletePortfolioItem(Long itemId) {
+        PortfolioItem item = portfolioItemRepository.findById(itemId).orElseThrow(() -> new EntityNotFoundException("Portfolio item not found with ID: " + itemId));
+
+        User user = item.getPortfolio().getUser();
+        Portfolio portfolio = item.getPortfolio();
+
+        // Calculate sale proceeds as if selling the stock
+        BigDecimal saleProceeds = BigDecimal.valueOf(item.getQuantity()).multiply(BigDecimal.valueOf(item.getStock().getCurrentPrice()));
+
+        user.setBalance(user.getBalance().add(saleProceeds.abs()));
+        userRepository.save(user);
+
+        // Log the "sale" of the portfolio item, even though its being deleted.
+        Transaction transaction = new Transaction();
+        transaction.setUser(user);
+        transaction.setDateTime(LocalDateTime.now());
+        transaction.setStockTicker(item.getStock().getTicker());
+        transaction.setQuantity(-Math.abs(item.getQuantity()));
+        transaction.setPurchasePrice(BigDecimal.valueOf(item.getStock().getCurrentPrice()));
+        transaction.setTotalCost(saleProceeds.negate());
+        transaction.setTransactionType("Sell (Deleted)");
+        transactionRepository.save(transaction);
+
+        portfolio.getItems().remove(item);
+        portfolioItemRepository.delete(item);
     }
 
     public void updateStockInPortfolio(Long userId, String symbol, int quantity, boolean isBuying) {
@@ -272,6 +310,25 @@ public class PortfolioService {
         calculatePortfolioStats(portfolio);
         portfolioRepository.save(portfolio);
         transactionRepository.save(transaction);
+    }
+
+    public Map<String, BigDecimal> getPortfolioSectorDistribution(Long userId) {
+        Portfolio portfolio = getPortfolio(userId);
+        BigDecimal totalValue = BigDecimal.ZERO;
+        Map<String, BigDecimal> sectorValues = new HashMap<>();
+
+        for (PortfolioItem item : portfolio.getItems()) {
+            BigDecimal itemValue = BigDecimal.valueOf(item.getQuantity()).multiply(BigDecimal.valueOf(item.getStock().getCurrentPrice()));
+            totalValue = totalValue.add(itemValue);
+            sectorValues.merge(item.getStock().getSector(), itemValue, BigDecimal::add);
+        }
+
+        // Convert sector values to percentages of the total value
+        for (Map.Entry<String, BigDecimal> entry : sectorValues.entrySet()) {
+            BigDecimal percentage = entry.getValue().multiply(new BigDecimal(100)).divide(totalValue, 2, RoundingMode.HALF_UP);
+            sectorValues.put(entry.getKey(), percentage);
+        }
+        return sectorValues;
     }
 
     public Long getCurrentUser() {

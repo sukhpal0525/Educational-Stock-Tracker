@@ -95,4 +95,5 @@ public class YahooFinanceResponse {
     private String displayName;
     private String symbol;
     private boolean hasPrePostMarketData;
+    private String sector;
 }
