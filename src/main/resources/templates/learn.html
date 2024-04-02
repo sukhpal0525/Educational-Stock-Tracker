@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Learn</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    .wide-container {
+      max-width: 90%;
+    }
+    .full-height {
+      height: auto;
+    }
+    .thin-grey-border th,
+    .thin-grey-border td {
+      border: 1px solid #dee2e6;
+    }
+    .card-header .card-title {
+      margin-bottom: 0.25rem;
+    }
+    .card-header small {
+      margin-bottom: 0.5rem;
+    }
+    .nav-pills .nav-link {
+      border-radius: 0;
+      color: #007bff;
+    }
+    .nav-pills .nav-link.active, .nav-pills .nav-link:hover {
+      background-color: #b3d7ff;
+      color: #000000;
+    }
+    .custom-modal-position {
+      margin-top: 5rem !important;
+    }
+  </style>
+</head>
+
+<body>
+
+<div th:replace="fragments/navbar :: navbar"></div>
+
+<div class="container-fluid bg-light wide-container full-height p-4" style="min-height: 100vh;">
+
+  <div class="row mb-4">
+    <div class="col">
+      <h4>Help & How-To</h4>
+    </div>
+  </div>
+
+  <div class="row">
+    <!-- Sidebar for filters -->
+    <div class="col-md-2">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="card-title">Filters</h5>
+        </div>
+        <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+          <a class="nav-link text-dark" href="/learn" id="v-pills-home-tab" role="tab" aria-controls="v-pills-home" aria-selected="true">All <span class="badge bg-secondary float-end">[[${categoryCounts['All']}]]</span></a>
+          <a class="nav-link text-dark" href="/learn/category/Risk" id="v-pills-risk-tab" role="tab" aria-controls="v-pills-risk" aria-selected="false">Risk <span class="badge bg-secondary float-end">[[${categoryCounts['Risk'] ?: '0'}]]</span></a>
+          <a class="nav-link text-dark" href="/learn/category/Investing-Basics" id="v-pills-investing-tab" role="tab" aria-controls="v-pills-investing" aria-selected="false">Investing Basics <span class="badge bg-secondary float-end">[[${categoryCounts['Investing-Basics'] ?: '0'}]]</span></a>
+          <a class="nav-link text-dark" href="/learn/category/Website-Help" id="v-pills-website-tab" role="tab" aria-controls="v-pills-website" aria-selected="false">Website Help <span class="badge bg-secondary float-end">[[${categoryCounts['Website-Help'] ?: '0'}]]</span></a>
+          <a class="nav-link text-dark" href="/learn/category/Portfolio-Management" id="v-pills-portfolio-management-tab" role="tab" aria-controls="v-pills-portfolio-management" aria-selected="false">Portfolio Management<span class="badge bg-secondary float-end">[[${categoryCounts['Portfolio-Management'] ?: '0'}]]</span></a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cards for learning content -->
+    <div class="col-md-9">
+      <div class="row row-cols-1 row-cols-md-3 g-4">
+        <div th:each="content, iterStat : ${contentList}" class="col">
+          <div class="card h-100">
+            <div class="card-body">
+              <h5 class="card-title" th:text="${content.title}" style="margin-bottom: 1rem;">Title</h5>
+              <p class="card-text" th:text="${content.summary}">Summary</p>
+            </div>
+            <div class="card-footer text-end">
+              <button type="button" class="btn btn-sm btn-primary" th:attr="data-bs-toggle='modal', data-bs-target='#modal'+${iterStat.index}">View</button>
+            </div>
+          </div>
+
+          <!-- Modal for detailed content -->
+          <div th:id="'modal' + ${iterStat.index}" class="modal fade" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg custom-modal-position">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title" th:text="${content.title}">Modal title</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" th:utext="${content.detail}">Detailed content:</div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    const currentPath = window.location.pathname.split("/").pop();
+
+    document.querySelectorAll('.nav-link').forEach(link => {
+      const linkPath = link.getAttribute('href').split("/").pop();
+
+      if (currentPath === linkPath) {
+        link.classList.add('active');
+        link.setAttribute('aria-selected', 'true');
+      } else {
+        link.classList.remove('active');
+        link.setAttribute('aria-selected', 'false');
+      }
+    });
+  });
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>
