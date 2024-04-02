@@ -57,12 +57,23 @@
         </div>
     </div>
 
+    <div th:if="${errorMessage}" class="alert alert-danger text-center text-dark fs-5" role="alert"><span th:text="${errorMessage}"></span></div>
+
     <div class="row mb-4 g-3">
         <div class="col d-flex flex-column justify-content-start gap-3">
-
             <div class="card mb-4" style="width: 76.5rem; height: 40rem;">
                 <div class="card-header">All Orders</div>
                 <div class="card-body p-4 pb-2">
+
+                    <form action="#" th:action="@{/orders}" method="get">
+                        <div class="input-group mb-3">
+                            <span class="input-group-text" id="ticker-addon">Ticker</span>
+                            <input type="text" class="form-control" placeholder="Search ticker" aria-label="Ticker" aria-describedby="ticker-addon" name="ticker" th:value="${ticker}">
+                            <button class="btn btn-outline-secondary" type="submit">Search</button>
+                            <button class="btn btn-outline-secondary" type="reset" onclick="window.location.href='/orders';">Reset</button>
+                        </div>
+                    </form>
+
                     <table class="table table-hover mb-0 thin-grey-border small-text">
                         <thead class="text-center custom-table-header">
                         <tr>
