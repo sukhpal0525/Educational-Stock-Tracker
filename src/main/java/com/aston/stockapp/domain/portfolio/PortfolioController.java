@@ -1,10 +1,17 @@
 package com.aston.stockapp.domain.portfolio;
 
 import com.aston.stockapp.api.YahooFinanceService;
+import com.aston.stockapp.domain.transaction.Transaction;
+import com.aston.stockapp.domain.transaction.TransactionRepository;
 import com.aston.stockapp.user.CustomUserDetails;
 import com.aston.stockapp.user.User;
 import com.aston.stockapp.user.repository.UserRepository;
+import com.aston.stockapp.util.InsufficientBalanceException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -16,9 +23,14 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.persistence.EntityNotFoundException;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Controller
 public class PortfolioController {
@@ -26,8 +38,10 @@ public class PortfolioController {
     @Autowired private PortfolioService portfolioService;
     @Autowired private YahooFinanceService yahooFinanceService;
     @Autowired private PortfolioItemRepository portfolioItemRepository;
+    @Autowired private TransactionRepository transactionRepository;
     @Autowired private PortfolioUpdateService portfolioUpdateService;
     @Autowired private UserRepository userRepository;
+    private ObjectMapper objectMapper;
 
     @GetMapping("/portfolio")
     public String viewPortfolio(Model model, Authentication authentication, RedirectAttributes redirectAttributes) {
@@ -37,20 +51,26 @@ public class PortfolioController {
             if (principal instanceof CustomUserDetails) {
                 CustomUserDetails userDetails = (CustomUserDetails) principal;
                 Long currentUserId = userDetails.getUser().getId();
+                Portfolio portfolio = portfolioService.getPortfolio(currentUserId);
+                List<PortfolioItem> portfolioItems = portfolio.getItems();
+                portfolioService.calculatePortfolioStats(portfolio);
 
-                Portfolio portfolio = portfolioService.getPortfolio(currentUserId); //Fetch portfolio for the logged in user and add to model
                 Map<String, BigDecimal> sectorDistribution = portfolioService.getPortfolioSectorDistribution(currentUserId);
                 boolean hasSectorData = sectorDistribution != null && !sectorDistribution.isEmpty() && !portfolio.getItems().isEmpty();
+                BigDecimal portfolioVolatility = portfolioService.calculatePortfolioVolatility(currentUserId);
+                List<BigDecimal> historicalPerformanceData = portfolioService.calculateHistoricalPerformance(portfolioItems);
+                List<Double> historicalPerformance = historicalPerformanceData.stream().map(BigDecimal::doubleValue).collect(Collectors.toList());
 
+                model.addAttribute("historicalPerformance", historicalPerformance);
                 model.addAttribute("portfolio", portfolio);
                 model.addAttribute("totalCost", portfolio.getTotalCost());
                 model.addAttribute("totalValue", portfolio.getTotalValue());
                 model.addAttribute("totalChangePercent", portfolio.getTotalChangePercent());
-                portfolioService.getCurrentUserBalance().ifPresent(balance -> model.addAttribute("balance", balance));
-                model.addAttribute("portfolio", portfolio);
                 model.addAttribute("isEditing", false);
                 model.addAttribute("hasSectorData", hasSectorData);
                 model.addAttribute("sectorDistribution", sectorDistribution);
+                model.addAttribute("portfolioVolatility", portfolioVolatility);
+                portfolioService.getCurrentUserBalance().ifPresent(balance -> model.addAttribute("balance", balance));
                 return "portfolio";
             } else {
                 // if the principal is not expected type for some reason, redirect to login
@@ -113,6 +133,7 @@ public class PortfolioController {
             // Calculate sector distribution for the portfolio
             Map<String, BigDecimal> sectorDistribution = portfolioService.getPortfolioSectorDistribution(userId);
             boolean hasSectorData = sectorDistribution != null && !sectorDistribution.isEmpty() && !portfolio.getItems().isEmpty();
+            BigDecimal portfolioVolatility = portfolioService.calculatePortfolioVolatility(userId);
 
             model.addAttribute("portfolio", portfolio);
             model.addAttribute("editingItemId", itemId);
@@ -122,6 +143,7 @@ public class PortfolioController {
             portfolioService.getCurrentUserBalance().ifPresent(balance -> model.addAttribute("balance", balance));
             model.addAttribute("hasSectorData", hasSectorData);
             model.addAttribute("sectorDistribution", sectorDistribution);
+            model.addAttribute("portfolioVolatility", portfolioVolatility);
             model.addAttribute("isEditing", true);
 
             return "portfolio";
@@ -150,33 +172,88 @@ public class PortfolioController {
     public String savePortfolioItem(@RequestParam("id") Long itemId, @RequestParam("newQuantity") int newQuantity, @RequestParam("newPurchasePrice") double newPurchasePrice, RedirectAttributes redirectAttributes) {
         try {
             PortfolioItem item = portfolioItemRepository.findById(itemId).orElseThrow(() -> new EntityNotFoundException("Portfolio item not found"));
-            double costDifference = (newPurchasePrice - item.getPurchasePrice()) * newQuantity;
+            double newTotalCost = newPurchasePrice * newQuantity;
+            double oldTotalCost = item.getPurchasePrice() * item.getQuantity();
+            double costDifference = newTotalCost - oldTotalCost;
 
-            // Retrieve the user and adjust balance based on the new price
             User user = item.getPortfolio().getUser();
-            BigDecimal balanceAdjustment = BigDecimal.valueOf(costDifference);
+            BigDecimal newBalance = user.getBalance().subtract(BigDecimal.valueOf(costDifference));
 
-            if(costDifference > 0) {
-                // If cost difference is positive, the new purchase price is higher so subtract from balance
-                user.setBalance(user.getBalance().subtract(balanceAdjustment));
-            } else {
-                // If the cost difference is <= 0, the new purchase price is lower or equal so add the difference to balance
-                user.setBalance(user.getBalance().add(balanceAdjustment.abs()));
+            if (newBalance.compareTo(BigDecimal.ZERO) < 0) {
+                throw new InsufficientBalanceException("Insufficient balance for the operation.");
             }
 
-            // Update item with new quantity and purchase price
+            // Proceed with updating the item and user's balance if sufficient funds are available
+            user.setBalance(newBalance);
             item.setQuantity(newQuantity);
             item.setPurchasePrice(newPurchasePrice);
             portfolioItemRepository.save(item);
             userRepository.save(user);
 
-            redirectAttributes.addFlashAttribute("successMessage", "Portfolio updated successfully.");
+            // Log the edit as a transaction
+            Transaction transaction = new Transaction();
+            transaction.setUser(user);
+            transaction.setDateTime(LocalDateTime.now());
+            transaction.setStockTicker(item.getStock().getTicker());
+            transaction.setQuantity(newQuantity);
+            transaction.setPurchasePrice(BigDecimal.valueOf(newPurchasePrice));
+            transaction.setTotalCost(BigDecimal.valueOf(newTotalCost));
+            transaction.setTransactionType("Edit");
+            transactionRepository.save(transaction);
+
+            redirectAttributes.addFlashAttribute("successMessage", "Portfolio item updated successfully.");
+            return "redirect:/portfolio";
+        } catch (InsufficientBalanceException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
             return "redirect:/portfolio";
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMessage", "Error updating portfolio item: " + e.getMessage());
             return "redirect:/portfolio";
         }
     }
+
+//    @PostMapping("/portfolio/save")
+//    public String savePortfolioItem(@RequestParam("id") Long itemId, @RequestParam("newQuantity") int newQuantity, @RequestParam("newPurchasePrice") double newPurchasePrice, RedirectAttributes redirectAttributes) {
+//        try {
+//            PortfolioItem item = portfolioItemRepository.findById(itemId).orElseThrow(() -> new EntityNotFoundException("Portfolio item not found"));
+//            double costDifference = (newPurchasePrice - item.getPurchasePrice()) * newQuantity;
+//
+//            // Retrieve the user and adjust balance based on the new price
+//            User user = item.getPortfolio().getUser();
+//            BigDecimal balanceAdjustment = BigDecimal.valueOf(costDifference);
+//
+//            if(costDifference > 0) {
+//                // If cost difference is positive, the new purchase price is higher so subtract from balance
+//                user.setBalance(user.getBalance().subtract(balanceAdjustment));
+//            } else {
+//                // If the cost difference is <= 0, the new purchase price is lower or equal so add the difference to balance
+//                user.setBalance(user.getBalance().add(balanceAdjustment.abs()));
+//            }
+//
+//            // Update item with new quantity and purchase price
+//            item.setQuantity(newQuantity);
+//            item.setPurchasePrice(newPurchasePrice);
+//            portfolioItemRepository.save(item);
+//
+//            Transaction transaction = new Transaction();
+//            transaction.setUser(user);
+//            transaction.setDateTime(LocalDateTime.now());
+//            transaction.setStockTicker(item.getStock().getTicker());
+//            transaction.setQuantity(newQuantity);
+//            transaction.setPurchasePrice(BigDecimal.valueOf(newPurchasePrice));
+//            transaction.setTotalCost(BigDecimal.valueOf(costDifference).abs());
+//            transaction.setTransactionType("Edit (Deleted)");
+//            transactionRepository.save(transaction);
+//
+//            userRepository.save(user);
+//
+//            redirectAttributes.addFlashAttribute("successMessage", "Portfolio updated successfully.");
+//            return "redirect:/portfolio";
+//        } catch (Exception e) {
+//            redirectAttributes.addFlashAttribute("errorMessage", "Error updating portfolio item: " + e.getMessage());
+//            return "redirect:/portfolio";
+//        }
+//    }
 
 //    @PostMapping("/portfolio/transaction")
 //    public String savePortfolio(@RequestParam String symbol, @RequestParam int quantity, @RequestParam String action, Model model, Authentication authentication) {
