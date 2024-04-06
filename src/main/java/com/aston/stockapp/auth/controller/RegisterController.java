@@ -1,5 +1,7 @@
 package com.aston.stockapp.auth.controller;
 
+import com.aston.stockapp.domain.portfolio.Portfolio;
+import com.aston.stockapp.domain.portfolio.PortfolioRepository;
 import com.aston.stockapp.user.User;
 import com.aston.stockapp.user.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +16,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class RegisterController {
 
     @Autowired private UserRepository userRepository;
+    @Autowired private PortfolioRepository portfolioRepository;
     @Autowired private PasswordEncoder passwordEncoder;
 
     @GetMapping
@@ -39,7 +42,15 @@ public class RegisterController {
         User user = new User();
         user.setUsername(username);
         user.setPassword(encodedPassword);
-        userRepository.save(user);
+        user = userRepository.save(user); // Save the user to generate an ID
+
+        // Ensure a portfolio is created for every new user
+        Portfolio portfolio = new Portfolio();
+        portfolio.setUser(user); // Associate the portfolio with the user
+        portfolio.setTotalCost(0.0);
+        portfolio.setTotalValue(0.0);
+        portfolio.setTotalChangePercent(0.0);
+        portfolioRepository.save(portfolio);
 
         redirectAttrs.addFlashAttribute("successMsg", "Success: Your account has been registered. Please login.");
         return "redirect:/login";
