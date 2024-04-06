@@ -1,4 +1,4 @@
-package com.aston.stockapp.action.repository;
+//package com.aston.stockapp.action.repository;
 
 //import com.aston.stockapp.action.model.Action;
 //import com.aston.stockapp.action.model.Category;

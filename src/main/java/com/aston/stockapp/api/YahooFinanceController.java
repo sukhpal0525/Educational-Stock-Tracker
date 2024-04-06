@@ -8,6 +8,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -26,7 +27,6 @@ public class YahooFinanceController {
 
     @GetMapping("/{symbol}")
     public String getStockData(@PathVariable String symbol, @RequestParam(defaultValue = "10y") String range, @RequestParam(required = false) Integer quantity, Authentication authentication, Model model) {
-        // Fetch and wait for all stock data asynchronously
         YahooStock stockFuture = yahooFinanceService.fetchStockData(symbol);
         String historicalDataFuture = yahooFinanceService.fetchHistoricalData(symbol, range);
         YahooStock stockInfoFuture = yahooFinanceService.fetchStockInfo(symbol);
@@ -68,23 +68,20 @@ public class YahooFinanceController {
 //    }
 
     @GetMapping("/search")
-    public String searchStock(@RequestParam String query) {
+    public String searchStock(@RequestParam String query, RedirectAttributes redirectAttributes) {
         String ticker = yahooFinanceService.getTickerFromName(query);
-        if (ticker == null) {
-            ticker = query;
-        }
-
+        if (ticker == null) { ticker = query; }
         try {
             YahooStock stock = yahooFinanceService.fetchStockData(ticker);
             if (stock != null) {
                 return "redirect:/stocks/" + stock.getTicker();
             } else {
-                return "redirect:/stocks";
+                redirectAttributes.addFlashAttribute("searchFailed", "No results found for: " + query + ". Please enter a valid ticker or stock name");
+                return "redirect:/";
             }
         } catch (Exception ex) {
-            // Log error: log.error("Error in searchStock: ", ex);
-            // TODO: Handle exception appropriately
-            return "redirect:/stocks";
+            redirectAttributes.addFlashAttribute("searchFailed", "No results found for: " + query + ". Please enter a valid ticker or stock name");
+            return "redirect:/";
         }
     }
 
