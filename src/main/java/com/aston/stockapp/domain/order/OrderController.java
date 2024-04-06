@@ -1,45 +1,54 @@
 package com.aston.stockapp.domain.order;
 
-import com.aston.stockapp.domain.portfolio.PortfolioService;
 import com.aston.stockapp.domain.transaction.Transaction;
 import com.aston.stockapp.domain.transaction.TransactionRepository;
 import com.aston.stockapp.user.CustomUserDetails;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-
-import javax.servlet.http.HttpServletRequest;
-import java.util.Collections;
-import java.util.List;
 
 @Controller
 @RequestMapping("/orders")
 public class OrderController {
 
-    @Autowired private PortfolioService portfolioService;
     @Autowired private TransactionRepository transactionRepository;
 
     @GetMapping("")
-    public String getOrders(@RequestParam(required = false) String ticker, Authentication authentication, Model model) {
+    public String getOrders(@RequestParam(required = false) String ticker, @RequestParam(required = false) String transactionType, Authentication authentication, Model model, @PageableDefault(size = 12) Pageable pageable) {
         if (authentication != null && authentication.isAuthenticated()) {
             CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
             Long userId = userDetails.getUser().getId();
+            Page<Transaction> transactionsPage;
 
-            List<Transaction> transactions;
-            if (ticker != null && !ticker.isEmpty()) {
-                transactions = transactionRepository.findByUserIdAndStockTicker(userId, ticker.toUpperCase());
+            // Check for "Any" transaction type or when no transaction type is specified
+            boolean anyTransactionType = transactionType == null || transactionType.isEmpty() || "Any".equals(transactionType);
+
+            if (!anyTransactionType && ticker != null && !ticker.isEmpty()) {
+                // Filter by both ticker and transaction type
+                transactionsPage = transactionRepository.findByUserIdAndStockTickerAndTransactionType(userId, ticker.toUpperCase(), transactionType, pageable);
+            } else if (!anyTransactionType) {
+                // Filter by transaction type only
+                transactionsPage = transactionRepository.findByUserIdAndTransactionType(userId, transactionType, pageable);
+            } else if (ticker != null && !ticker.isEmpty()) {
+                // Filter by ticker only
+                transactionsPage = transactionRepository.findByUserIdAndStockTicker(userId, ticker.toUpperCase(), pageable);
             } else {
-                transactions = transactionRepository.findByUserId(userId);
+                // Show all transactions by default
+                transactionsPage = transactionRepository.findByUserId(userId, pageable);
             }
 
-            model.addAttribute("transactions", transactions);
+            model.addAttribute("transactionsPage", transactionsPage);
             model.addAttribute("ticker", ticker);
+            model.addAttribute("transactionType", transactionType);
+            model.addAttribute("hasTransactions", transactionsPage.hasContent());
+
             return "orders";
         } else {
             return "redirect:/login";

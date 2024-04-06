@@ -61,14 +61,19 @@
 
     <div class="row mb-4 g-3">
         <div class="col d-flex flex-column justify-content-start gap-3">
-            <div class="card mb-4" style="width: 76.5rem; height: 40rem;">
+            <div class="card mb-4" style="width: 76.5rem; height: 42rem;">
                 <div class="card-header">All Orders</div>
                 <div class="card-body p-4 pb-2">
-
                     <form action="#" th:action="@{/orders}" method="get">
                         <div class="input-group mb-3">
                             <span class="input-group-text" id="ticker-addon">Ticker</span>
                             <input type="text" class="form-control" placeholder="Search ticker" aria-label="Ticker" aria-describedby="ticker-addon" name="ticker" th:value="${ticker}">
+                            <select class="form-select" name="transactionType">
+                                <option value="">Any Type</option>
+                                <option value="Buy" th:selected="${transactionType == 'Buy'}">Buy</option>
+                                <option value="Sell" th:selected="${transactionType == 'Sell'}">Sell</option>
+                                <option value="Edit" th:selected="${transactionType == 'Edit'}">Edit</option>
+                            </select>
                             <button class="btn btn-outline-secondary" type="submit">Search</button>
                             <button class="btn btn-outline-secondary" type="reset" onclick="window.location.href='/orders';">Reset</button>
                         </div>
@@ -87,8 +92,8 @@
                         </tr>
                         </thead>
                         <tbody class="text-center">
-                        <tr th:each="transaction, stat : ${transactions}">
-                            <td th:text="${stat.count}"></td>
+                        <tr th:if="${hasTransactions}" th:each="transaction, stat : ${transactionsPage.content}">
+                            <td th:text="${stat.index + 1 + (transactionsPage.number * transactionsPage.size)}"></td>
                             <td th:text="${transaction.stockTicker}"></td>
                             <td th:text="${transaction.quantity}"></td>
                             <td th:text="'$' + ${#numbers.formatDecimal(transaction.purchasePrice, 1, 'COMMA', 2, 'POINT')}"></td>
@@ -96,7 +101,7 @@
                             <td th:text="${transaction.transactionType}"></td>
                             <td th:text="${#temporals.format(transaction.dateTime, 'dd-MM-yy (HH:mm)')}"></td>
                         </tr>
-                        <tr th:each="i : ${#numbers.sequence(1, 12)}" th:if="${transactions.size() < 12}" th:class="${i > transactions.size() ? '' : 'd-none'}">
+                        <tr th:unless="${hasTransactions}" th:each="i : ${#numbers.sequence(1, 12)}">
                             <td>&nbsp;</td>
                             <td>&nbsp;</td>
                             <td>&nbsp;</td>
@@ -108,13 +113,21 @@
                         </tbody>
                     </table>
                 </div>
-                <nav aria-label="Page navigation" class="text-end pe-4">
+                <nav aria-label="Page navigation" class="text-end pe-4" th:if="${transactionsPage.totalPages > 1}">
                     <ul class="pagination pagination-sm justify-content-end mb-4">
-                        <li class="page-item"><a class="page-link" href="#">Previous</a></li>
-                        <li class="page-item active" aria-current="page"><a class="page-link" href="#">1</a></li>
-                        <li class="page-item"><a class="page-link" href="#">2</a></li>
-                        <li class="page-item"><a class="page-link" href="#">3</a></li>
-                        <li class="page-item"><a class="page-link" href="#">Next</a></li>
+                        <li class="page-item" th:classappend="${transactionsPage.number == 0 ? 'disabled' : ''}">
+                            <a class="page-link" th:href="@{/orders(page=${transactionsPage.number - 1}, size=${transactionsPage.size}, transactionType=${transactionType}, ticker=${ticker})}" aria-label="Previous">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+                        <li th:each="pageNum : ${#numbers.sequence(0, transactionsPage.totalPages - 1)}" th:classappend="${pageNum == transactionsPage.number ? 'active' : ''}" class="page-item">
+                            <a class="page-link" th:href="@{/orders(page=${pageNum}, size=${transactionsPage.size}, transactionType=${transactionType}, ticker=${ticker})}" th:text="${pageNum + 1}">1</a>
+                        </li>
+                        <li class="page-item" th:classappend="${transactionsPage.number + 1 == transactionsPage.totalPages ? 'disabled' : ''}">
+                            <a class="page-link" th:href="@{/orders(page=${transactionsPage.number + 1}, size=${transactionsPage.size}, transactionType=${transactionType}, ticker=${ticker})}" aria-label="Next">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
                     </ul>
                 </nav>
             </div>
@@ -122,7 +135,7 @@
 
         <div class="ms-auto" style="width: 22rem;">
             <!-- Buy/Sell Card -->
-            <div class="card" style="height: 40rem;">
+            <div class="card" style="height: 42rem;">
                 <div class="card-header">
 
                 </div>
