@@ -7,9 +7,9 @@ import com.aston.stockapp.user.CustomUserDetails;
 import com.aston.stockapp.user.User;
 import com.aston.stockapp.user.repository.UserRepository;
 import com.aston.stockapp.util.InsufficientBalanceException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
@@ -24,13 +24,10 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import javax.persistence.EntityNotFoundException;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Controller
 public class PortfolioController {
@@ -41,10 +38,9 @@ public class PortfolioController {
     @Autowired private TransactionRepository transactionRepository;
     @Autowired private PortfolioUpdateService portfolioUpdateService;
     @Autowired private UserRepository userRepository;
-    private ObjectMapper objectMapper;
 
     @GetMapping("/portfolio")
-    public String viewPortfolio(Model model, Authentication authentication, RedirectAttributes redirectAttributes) {
+    public String viewPortfolio(Model model, Authentication authentication, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "12") int size, RedirectAttributes redirectAttributes) {
         if (authentication != null && authentication.isAuthenticated()) {
             // Use authentication to check and cast to CustomUserDetails
             Object principal = authentication.getPrincipal();
@@ -55,12 +51,16 @@ public class PortfolioController {
                 List<PortfolioItem> portfolioItems = portfolio.getItems();
                 portfolioService.calculatePortfolioStats(portfolio);
 
+                Pageable pageable = PageRequest.of(page, size);
+                Page<PortfolioItem> portfolioPage = portfolioItemRepository.findByPortfolioUserId(currentUserId, pageable);
+
                 Map<String, BigDecimal> sectorDistribution = portfolioService.getPortfolioSectorDistribution(currentUserId);
                 boolean hasSectorData = sectorDistribution != null && !sectorDistribution.isEmpty() && !portfolio.getItems().isEmpty();
                 BigDecimal portfolioVolatility = portfolioService.calculatePortfolioVolatility(currentUserId);
                 List<BigDecimal> historicalPerformanceData = portfolioService.calculateHistoricalPerformance(portfolioItems);
                 List<Double> historicalPerformance = historicalPerformanceData.stream().map(BigDecimal::doubleValue).collect(Collectors.toList());
 
+                model.addAttribute("itemsPage", portfolioPage);
                 model.addAttribute("historicalPerformance", historicalPerformance);
                 model.addAttribute("portfolio", portfolio);
                 model.addAttribute("totalCost", portfolio.getTotalCost());
@@ -123,7 +123,7 @@ public class PortfolioController {
 //    }
 
     @GetMapping("/portfolio/edit")
-    public String editPortfolio(@RequestParam("id") Long itemId, Model model) {
+    public String editPortfolio(@RequestParam("id") Long itemId, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "12") int size, Model model) {
         try {
             Long userId = portfolioService.getCurrentUser();
             Portfolio portfolio = portfolioService.getPortfolio(userId);
@@ -135,16 +135,25 @@ public class PortfolioController {
             boolean hasSectorData = sectorDistribution != null && !sectorDistribution.isEmpty() && !portfolio.getItems().isEmpty();
             BigDecimal portfolioVolatility = portfolioService.calculatePortfolioVolatility(userId);
 
+            // Fetch the editable item
+            PortfolioItem editableItem = portfolioItemRepository.findById(itemId).orElseThrow(() -> new EntityNotFoundException("Edit item not found"));;
+            List<PortfolioItem> editableItemList = Collections.singletonList(editableItem);
+
+            // Setup pageable with the current page and size
+            Pageable pageable = PageRequest.of(page, size);
+            Page<PortfolioItem> singleItemPage = new PageImpl<>(editableItemList, pageable, editableItemList.size());
+
+            model.addAttribute("itemsPage", singleItemPage);
             model.addAttribute("portfolio", portfolio);
             model.addAttribute("editingItemId", itemId);
             model.addAttribute("totalCost", portfolio.getTotalCost());
             model.addAttribute("totalValue", portfolio.getTotalValue());
             model.addAttribute("totalChangePercent", portfolio.getTotalChangePercent());
-            portfolioService.getCurrentUserBalance().ifPresent(balance -> model.addAttribute("balance", balance));
             model.addAttribute("hasSectorData", hasSectorData);
             model.addAttribute("sectorDistribution", sectorDistribution);
             model.addAttribute("portfolioVolatility", portfolioVolatility);
             model.addAttribute("isEditing", true);
+            portfolioService.getCurrentUserBalance().ifPresent(balance -> model.addAttribute("balance", balance));
 
             return "portfolio";
         } catch (IllegalStateException e) {

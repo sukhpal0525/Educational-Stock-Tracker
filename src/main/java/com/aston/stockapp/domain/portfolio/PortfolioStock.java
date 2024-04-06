@@ -6,6 +6,7 @@ import lombok.Setter;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import java.math.BigDecimal;
 
 @Getter
 @Setter
@@ -21,4 +22,8 @@ public class PortfolioStock {
     private double currentPrice;
 
     private String sector;
+
+    private BigDecimal fiftyTwoWeekHigh;
+    private BigDecimal fiftyTwoWeekLow;
+    private BigDecimal regularMarketChangePercent;
 }
