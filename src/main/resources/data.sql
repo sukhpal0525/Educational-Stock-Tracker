@@ -92,7 +92,7 @@ INSERT INTO learning_content (title, category, summary, detail) VALUES
     ('Understanding and Managing Portfolio Risk', 'Portfolio-Management', 'Learn how to understand and manage the risks associated with your investment portfolio.', '<p>Understanding the types of risk your portfolio is exposed to can help you manage it effectively. Key risks include market risk, credit risk, and liquidity risk. Strategies for managing these risks include diversification, asset allocation, and maintaining a long-term perspective.</p>'),
 
     --finish this below
-    ('Performance Measurement and Analysis', 'Portfolio-Management', 'Discover how to measure and analyze your portfolio’s performance.', '<p>Measuring and analyzing your portfolio’s performance is crucial for understanding its efficacy. </p>'),
+    ('Performance Measurement and Analysis', 'Portfolio-Management', 'Discover how to measure and analyse your portfolio’s performance.', '<p>Measuring and analyzing your portfolio’s performance is crucial for understanding its efficacy. </p>'),
     ('Strategic Rebalancing of Your Portfolio', 'Portfolio-Management', 'Learn the importance of rebalancing and strategies for effectively rebalancing your portfolio.', '<p>Rebalancing is the process of realigning the weightings of a portfolio of assets. Rebalancing involves periodically buying or selling assets in a portfolio to maintain an original or desired level of asset allocation or risk. This can involve shifting funds from high-performing investments to those having underperformed to maintain a desired investment balance.</p>');
 
 

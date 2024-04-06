@@ -9,6 +9,8 @@ import com.aston.stockapp.user.User;
 import com.aston.stockapp.user.repository.UserRepository;
 import com.aston.stockapp.util.InsufficientBalanceException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -555,6 +557,10 @@ public class PortfolioService {
         }
         System.out.println("Forecasted Future Value: " + forecastedValue);
         return forecastedValue;
+    }
+
+    public Page<Portfolio> getAllPortfolios(Pageable pageable) {
+        return portfolioRepository.findAll(pageable);
     }
 
     public Long getCurrentUser() {

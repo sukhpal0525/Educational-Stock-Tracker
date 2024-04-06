@@ -25,7 +25,7 @@ public class CustomUserDetails implements UserDetails {
 
         if (user != null && user.isAdmin()) {
             log.info("Detected admin {}", user.getUsername());
-            authorities.add(new SimpleGrantedAuthority("ADMIN"));
+            authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
         }
         return authorities;
     }
