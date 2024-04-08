@@ -27,20 +27,18 @@ public class OrderController {
             Long userId = userDetails.getUser().getId();
             Page<Transaction> transactionsPage;
 
-            // Check for "Any" transaction type or when no transaction type is specified
             boolean anyTransactionType = transactionType == null || transactionType.isEmpty() || "Any".equals(transactionType);
 
             if (!anyTransactionType && ticker != null && !ticker.isEmpty()) {
-                // Filter by both ticker and transaction type
                 transactionsPage = transactionRepository.findByUserIdAndStockTickerAndTransactionType(userId, ticker.toUpperCase(), transactionType, pageable);
+            } else if ("Edit".equals(transactionType)) {
+                // Include "Edit", "Edit (Buy)", and "Edit (Sell)" transactions
+                transactionsPage = transactionRepository.findByUserIdAndEditTypes(userId, pageable);
             } else if (!anyTransactionType) {
-                // Filter by transaction type only
                 transactionsPage = transactionRepository.findByUserIdAndTransactionType(userId, transactionType, pageable);
             } else if (ticker != null && !ticker.isEmpty()) {
-                // Filter by ticker only
                 transactionsPage = transactionRepository.findByUserIdAndStockTicker(userId, ticker.toUpperCase(), pageable);
             } else {
-                // Show all transactions by default
                 transactionsPage = transactionRepository.findByUserId(userId, pageable);
             }
 
@@ -54,5 +52,41 @@ public class OrderController {
             return "redirect:/login";
         }
     }
+
+
+//    @GetMapping("")
+//    public String getOrders(@RequestParam(required = false) String ticker, @RequestParam(required = false) String transactionType, Authentication authentication, Model model, @PageableDefault(size = 12) Pageable pageable) {
+//        if (authentication != null && authentication.isAuthenticated()) {
+//            CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+//            Long userId = userDetails.getUser().getId();
+//            Page<Transaction> transactionsPage;
+//
+//            // Check for "Any" transaction type or when no transaction type is specified
+//            boolean anyTransactionType = transactionType == null || transactionType.isEmpty() || "Any".equals(transactionType);
+//
+//            if (!anyTransactionType && ticker != null && !ticker.isEmpty()) {
+//                // Filter by both ticker and transaction type
+//                transactionsPage = transactionRepository.findByUserIdAndStockTickerAndTransactionType(userId, ticker.toUpperCase(), transactionType, pageable);
+//            } else if (!anyTransactionType) {
+//                // Filter by transaction type only
+//                transactionsPage = transactionRepository.findByUserIdAndTransactionType(userId, transactionType, pageable);
+//            } else if (ticker != null && !ticker.isEmpty()) {
+//                // Filter by ticker only
+//                transactionsPage = transactionRepository.findByUserIdAndStockTicker(userId, ticker.toUpperCase(), pageable);
+//            } else {
+//                // Show all transactions by default
+//                transactionsPage = transactionRepository.findByUserId(userId, pageable);
+//            }
+//
+//            model.addAttribute("transactionsPage", transactionsPage);
+//            model.addAttribute("ticker", ticker);
+//            model.addAttribute("transactionType", transactionType);
+//            model.addAttribute("hasTransactions", transactionsPage.hasContent());
+//
+//            return "orders";
+//        } else {
+//            return "redirect:/login";
+//        }
+//    }
 }
 

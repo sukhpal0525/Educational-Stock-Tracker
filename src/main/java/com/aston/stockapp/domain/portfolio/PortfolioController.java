@@ -181,12 +181,29 @@ public class PortfolioController {
     public String savePortfolioItem(@RequestParam("id") Long itemId, @RequestParam("newQuantity") int newQuantity, @RequestParam("newPurchasePrice") double newPurchasePrice, RedirectAttributes redirectAttributes) {
         try {
             PortfolioItem item = portfolioItemRepository.findById(itemId).orElseThrow(() -> new EntityNotFoundException("Portfolio item not found"));
-            double newTotalCost = newPurchasePrice * newQuantity;
-            double oldTotalCost = item.getPurchasePrice() * item.getQuantity();
-            double costDifference = newTotalCost - oldTotalCost;
+
+            int quantityDifference = newQuantity - item.getQuantity();
+            String transactionType;
+
+            if (quantityDifference > 0) {
+                transactionType = "Edit (Buy)";
+            } else {
+                transactionType = "Edit (Sell)";
+                quantityDifference = -quantityDifference; // <-- Ensures quantity is positive for logging
+            }
+
+            double individualCost = item.getPurchasePrice();
+            double totalCostDifference = individualCost * quantityDifference;
 
             User user = item.getPortfolio().getUser();
-            BigDecimal newBalance = user.getBalance().subtract(BigDecimal.valueOf(costDifference));
+            BigDecimal newBalance;
+
+            // Adjust balance based on whether the edit was effectively a buy or sell
+            if ("Edit (Buy)".equals(transactionType)) {
+                newBalance = user.getBalance().subtract(BigDecimal.valueOf(totalCostDifference));
+            } else { // "Edit (Sell)"
+                newBalance = user.getBalance().add(BigDecimal.valueOf(totalCostDifference));
+            }
 
             if (newBalance.compareTo(BigDecimal.ZERO) < 0) {
                 throw new InsufficientBalanceException("Insufficient balance for the operation.");
@@ -199,15 +216,15 @@ public class PortfolioController {
             portfolioItemRepository.save(item);
             userRepository.save(user);
 
-            // Log the edit as a transaction
+            // Log the edit as a transaction with corrected quantity and cost
             Transaction transaction = new Transaction();
             transaction.setUser(user);
             transaction.setDateTime(LocalDateTime.now());
             transaction.setStockTicker(item.getStock().getTicker());
-            transaction.setQuantity(newQuantity);
+            transaction.setQuantity(quantityDifference);
             transaction.setPurchasePrice(BigDecimal.valueOf(newPurchasePrice));
-            transaction.setTotalCost(BigDecimal.valueOf(newTotalCost));
-            transaction.setTransactionType("Edit");
+            transaction.setTotalCost(BigDecimal.valueOf(totalCostDifference));
+            transaction.setTransactionType(transactionType);
             transactionRepository.save(transaction);
 
             redirectAttributes.addFlashAttribute("successMessage", "Portfolio item updated successfully.");
@@ -220,6 +237,7 @@ public class PortfolioController {
             return "redirect:/portfolio";
         }
     }
+
 
 //    @PostMapping("/portfolio/save")
 //    public String savePortfolioItem(@RequestParam("id") Long itemId, @RequestParam("newQuantity") int newQuantity, @RequestParam("newPurchasePrice") double newPurchasePrice, RedirectAttributes redirectAttributes) {
