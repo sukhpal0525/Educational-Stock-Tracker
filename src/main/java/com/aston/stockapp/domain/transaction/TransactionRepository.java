@@ -20,4 +20,7 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
 
     @Query("SELECT t FROM Transaction t WHERE t.user.id = :userId AND t.transactionType IN ('Edit', 'Edit (Buy)', 'Edit (Sell)')")
     Page<Transaction> findByUserIdAndEditTypes(@Param("userId") Long userId, Pageable pageable);
+
+    @Query("SELECT t FROM Transaction t WHERE EXISTS (SELECT 1 FROM User u WHERE u.id = t.user.id)")
+    Page<Transaction> findAllExisting(Pageable pageable);
 }

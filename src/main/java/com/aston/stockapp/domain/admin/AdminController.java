@@ -1,6 +1,7 @@
 package com.aston.stockapp.domain.admin;
 
 import com.aston.stockapp.domain.portfolio.Portfolio;
+import com.aston.stockapp.domain.portfolio.PortfolioRepository;
 import com.aston.stockapp.domain.portfolio.PortfolioService;
 import com.aston.stockapp.domain.transaction.Transaction;
 import com.aston.stockapp.domain.transaction.TransactionRepository;
@@ -20,8 +21,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class AdminController {
 
     @Autowired private UserRepository userRepository;
-    @Autowired private UserRepository portfolioRepository;
-    @Autowired private PortfolioService portfolioService;
+    @Autowired private PortfolioRepository portfolioRepository;
     @Autowired private TransactionRepository transactionRepository;
 
     @GetMapping("")
@@ -36,6 +36,7 @@ public class AdminController {
         long portfolioCount = portfolioRepository.count();
         long transactionCount = transactionRepository.count();
 
+
         if (view == null || view.isEmpty()) {
             view = "users";
         }
@@ -44,10 +45,10 @@ public class AdminController {
             Page<User> usersPage = userRepository.findAll(pageable);
             model.addAttribute("usersPage", usersPage);
         } else if ("portfolios".equals(view)) {
-            Page<Portfolio> portfoliosPage = portfolioService.getAllPortfolios(pageable);
+            Page<Portfolio> portfoliosPage = portfolioRepository.findAllExisting(pageable);
             model.addAttribute("portfoliosPage", portfoliosPage);
         } else if ("transactions".equals(view)) {
-            Page<Transaction> transactionsPage = transactionRepository.findAll(pageable);
+            Page<Transaction> transactionsPage = transactionRepository.findAllExisting(pageable);
             model.addAttribute("transactionsPage", transactionsPage);
         }
 

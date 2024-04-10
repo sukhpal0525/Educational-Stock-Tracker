@@ -72,7 +72,7 @@
                         </a>
                         <a class="nav-link text-dark" th:classappend="${view == 'portfolios'} ? 'active' : ''"
                            th:href="@{/admin/(view='portfolios')}">All Portfolios
-                            <span class="badge bg-secondary float-end" th:text="${portfolioCount - 1 ?: 0}">0</span>
+                            <span class="badge bg-secondary float-end" th:text="${portfolioCount ?: 0}">0</span>
                         </a>
                         <a class="nav-link text-dark" th:classappend="${view == 'transactions'} ? 'active' : ''"
                            th:href="@{/admin/(view='transactions')}">All Transactions

@@ -1,4 +1,4 @@
-package com.aston.stockapp.domain.order;
+package com.aston.stockapp.domain.transaction;
 
 import com.aston.stockapp.domain.transaction.Transaction;
 import com.aston.stockapp.domain.transaction.TransactionRepository;
