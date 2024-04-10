@@ -192,7 +192,9 @@ public class PortfolioService {
             totalCost += cost;
             totalValue += value;
         }
-        double totalChangePercent = totalCost > 0 ? (totalValue - totalCost) / totalCost * 100 : 0;
+        double totalChangeValue = totalValue - totalCost;
+        double totalChangePercent = totalCost > 0 ? (totalChangeValue / totalCost * 100) : 0;
+
         portfolio.setTotalCost(totalCost);
         portfolio.setTotalValue(totalValue);
         portfolio.setTotalChangePercent(totalChangePercent);
@@ -227,9 +229,9 @@ public class PortfolioService {
         transaction.setUser(user);
         transaction.setDateTime(LocalDateTime.now());
         transaction.setStockTicker(item.getStock().getTicker());
-        transaction.setQuantity(-Math.abs(item.getQuantity()));
+        transaction.setQuantity(item.getQuantity());
         transaction.setPurchasePrice(BigDecimal.valueOf(item.getStock().getCurrentPrice()));
-        transaction.setTotalCost(saleProceeds.negate());
+        transaction.setTotalCost(saleProceeds);
         transaction.setTransactionType("Sell (Deleted)");
         transactionRepository.save(transaction);
 
@@ -237,7 +239,6 @@ public class PortfolioService {
         portfolioItemRepository.delete(item);
 
         calculatePortfolioStats(portfolio);
-
     }
 
     public void updateStockInPortfolio(Long userId, String symbol, int quantity, boolean isBuying) {

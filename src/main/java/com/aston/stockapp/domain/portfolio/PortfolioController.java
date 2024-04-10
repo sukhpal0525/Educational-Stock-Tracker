@@ -36,7 +36,6 @@ public class PortfolioController {
     @Autowired private YahooFinanceService yahooFinanceService;
     @Autowired private PortfolioItemRepository portfolioItemRepository;
     @Autowired private TransactionRepository transactionRepository;
-    @Autowired private PortfolioUpdateService portfolioUpdateService;
     @Autowired private UserRepository userRepository;
 
     @GetMapping("/portfolio")
@@ -54,6 +53,8 @@ public class PortfolioController {
                 Pageable pageable = PageRequest.of(page, size);
                 Page<PortfolioItem> portfolioPage = portfolioItemRepository.findByPortfolioUserId(currentUserId, pageable);
 
+                double totalChangeValue = portfolio.getTotalValue() - portfolio.getTotalCost();
+
                 Map<String, BigDecimal> sectorDistribution = portfolioService.getPortfolioSectorDistribution(currentUserId);
                 boolean hasSectorData = sectorDistribution != null && !sectorDistribution.isEmpty() && !portfolio.getItems().isEmpty();
                 BigDecimal portfolioVolatility = portfolioService.calculatePortfolioVolatility(currentUserId);
@@ -65,6 +66,7 @@ public class PortfolioController {
                 model.addAttribute("portfolio", portfolio);
                 model.addAttribute("totalCost", portfolio.getTotalCost());
                 model.addAttribute("totalValue", portfolio.getTotalValue());
+                model.addAttribute("totalChangeValue", totalChangeValue);
                 model.addAttribute("totalChangePercent", portfolio.getTotalChangePercent());
                 model.addAttribute("isEditing", false);
                 model.addAttribute("hasSectorData", hasSectorData);
@@ -127,6 +129,7 @@ public class PortfolioController {
         try {
             Long userId = portfolioService.getCurrentUser();
             Portfolio portfolio = portfolioService.getPortfolio(userId);
+            double totalChangeValue = portfolio.getTotalValue() - portfolio.getTotalCost();
 
             portfolioService.calculatePortfolioStats(portfolio);
 
@@ -149,6 +152,7 @@ public class PortfolioController {
             model.addAttribute("totalCost", portfolio.getTotalCost());
             model.addAttribute("totalValue", portfolio.getTotalValue());
             model.addAttribute("totalChangePercent", portfolio.getTotalChangePercent());
+            model.addAttribute("totalChangeValue", totalChangeValue);
             model.addAttribute("hasSectorData", hasSectorData);
             model.addAttribute("sectorDistribution", sectorDistribution);
             model.addAttribute("portfolioVolatility", portfolioVolatility);
@@ -306,11 +310,11 @@ public class PortfolioController {
 //        return "redirect:/stocks/" + symbol;
 //    }
 
-    @PostMapping("/portfolio/updatePrices")
-    public String updateStockPricesManually() {
-        portfolioUpdateService.manualUpdateStockPrices();
-        return "redirect:/portfolio";
-    }
+//    @PostMapping("/portfolio/updatePrices")
+//    public String updateStockPricesManually() {
+//        portfolioUpdateService.manualUpdateStockPrices();
+//        return "redirect:/portfolio";
+//    }
 
     @GetMapping("/portfolio/delete/{id}")
     public String deletePortfolioItem(@PathVariable Long id, RedirectAttributes redirectAttributes) {

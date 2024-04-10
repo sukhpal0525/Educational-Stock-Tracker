@@ -127,7 +127,7 @@
                     <div class="card-header">Total Change</div>
                     <div class="card-body d-flex align-items-center h-100">
                         <h4 class="m-0">
-                            <span th:text="'$' + (${totalChangeValue} != null ? ${#numbers.formatDecimal(totalChangeValue, 2, 'COMMA', 2, 'POINT')} : '0.00')"></span>
+                            <span th:text="'$' + ${#numbers.formatDecimal(totalChangeValue, 2, 'COMMA', 2, 'POINT')}"></span>
                             (<span th:class="${totalChangePercent >= 0 ? 'text-success' : 'text-danger'}"
                                    th:text="(${totalChangePercent} != null ? ${#numbers.formatDecimal(totalChangePercent, 1, 'COMMA', 2, 'POINT')} : '0.00') + '%'"></span>)
                         </h4>
@@ -135,10 +135,10 @@
                 </div>
             </div>
 
-            <div class="card mb-4" style="width: 76.5rem; height: 37rem;">
+            <div class="card mb-4" style="width: 76.5rem; height: 40rem;">
                 <div class="card-header">Investments</div>
-                <div class="card-body p-4 pb-2">
-                    <table class="table table-hover mb-0 thin-grey-border small-text">
+                <div class="card-body p-4">
+                    <table class="table table-hover mb-4 thin-grey-border small-text">
                         <thead class="text-center custom-table-header">
                         <tr>
                             <th scope="col">Name</th>
@@ -189,40 +189,48 @@
                         </tr>
                         </tbody>
                     </table>
-                </div>
-                <div class="d-flex justify-content-between align-items-end px-4">
-                    <nav aria-label="Page navigation" class="mb-4">
-                        <ul class="pagination pagination-sm mb-0">
-                            <!-- Previous page Link -->
-                            <li class="page-item" th:classappend="${itemsPage.first ? 'disabled' : ''}">
-                                <a class="page-link" th:href="@{/portfolio(page=${itemsPage.number - 1}, size=${itemsPage.size})}" aria-label="Previous">
-                                    <span aria-hidden="true">&laquo;</span>
-                                </a>
-                            </li>
-                            <!-- Page number Links -->
-                            <li class="page-item" th:if="${itemsPage.totalPages > 1}" th:each="pageNum : ${#numbers.sequence(0, itemsPage.totalPages - 1)}" th:classappend="${pageNum == itemsPage.number ? 'active' : ''}">
-                                <a class="page-link" th:href="@{/portfolio(page=${pageNum}, size=${itemsPage.size})}" th:text="${pageNum + 1}"></a>
-                            </li>
-                            <!-- Next page Link -->
-                            <li class="page-item" th:classappend="${itemsPage.last ? 'disabled' : ''}">
-                                <a class="page-link" th:href="@{/portfolio(page=${itemsPage.number + 1}, size=${itemsPage.size})}" aria-label="Next">
-                                    <span aria-hidden="true">&raquo;</span>
-                                </a>
-                            </li>
-                        </ul>
-                    </nav>
+                    <div class="row align-items-end">
+                        <div class="col">
+                            <form th:action="@{/portfolio/updatePrices}" method="post">
+                                <button type="submit" class="btn btn-outline-secondary text-dark">Refresh Prices</button>
+                            </form>
+                        </div>
+                        <div class="col-6 text-end">
+                            <nav aria-label="Page navigation">
+                                <ul class="pagination pagination-sm mb-0 justify-content-end">
+                                    <!-- Previous page Link -->
+                                    <li class="page-item" th:classappend="${itemsPage.first ? 'disabled' : ''}">
+                                        <a class="page-link" th:href="@{/portfolio(page=${itemsPage.number - 1}, size=${itemsPage.size})}" aria-label="Previous">
+                                            <span aria-hidden="true">&laquo;</span>
+                                        </a>
+                                    </li>
+                                    <li class="page-item" th:classappend="${itemsPage.number == 0 ? 'active' : ''}">
+                                        <a class="page-link" th:href="@{/portfolio(page=0, size=${itemsPage.size})}">1</a>
+                                    </li>
+                                    <li class="page-item" th:if="${itemsPage.totalPages > 1}" th:each="pageNum : ${#numbers.sequence(1, itemsPage.totalPages - 1)}" th:classappend="${pageNum == itemsPage.number ? 'active' : ''}">
+                                        <a class="page-link" th:href="@{/portfolio(page=${pageNum}, size=${itemsPage.size})}" th:text="${pageNum + 1}"></a>
+                                    </li>
+                                    <!-- Next page Link -->
+                                    <li class="page-item" th:classappend="${itemsPage.last ? 'disabled' : ''}">
+                                        <a class="page-link" th:href="@{/portfolio(page=${itemsPage.number + 1}, size=${itemsPage.size})}" aria-label="Next">
+                                            <span aria-hidden="true">&raquo;</span>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </nav>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="ms-auto" style="width: 22rem;">
-            <div class="card portfolio-analysis-card" style="height: 49rem;">
+            <div class="card portfolio-analysis-card" style="height: 49rem; width: 24rem;">
                 <div class="card-header portfolio-analysis-header">Portfolio Analysis</div>
                 <div class="card-body portfolio-analysis-body">
                     <div class="d-flex justify-content-center align-items-center flex-column mb-4" style="margin-bottom: 4rem;">
                         <h6 class="mb-3 text-center w-100">Sector Allocation</h6>
-                        <div style="max-width: 600px; width: 100%; display: flex; justify-content: center; overflow: hidden;">
-                            <div id="sectorDistributionChart" style="max-width: 600px; margin: auto;"></div>
+                        <div class="d-flex justify-content-center" style="overflow: hidden;">
+                            <div id="sectorDistributionChart"></div>
                         </div>
                         <div class="legend-container text-center mt-4"></div>
                     </div>
@@ -234,7 +242,6 @@
                     </div>
                 </div>
             </div>
-        </div>
     </div>
 
     <div class="row">
@@ -315,7 +322,7 @@
         chart: {
             type: 'donut',
             height: 350,
-            width: '100%',
+            width: 350,
             toolbar: {
                 show: true,
                 tools: {
