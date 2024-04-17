@@ -188,6 +188,29 @@
                 <div class="card mb-4">
                     <div class="card-header">All Transactions</div>
                     <div class="card-body p-4 pb-2">
+                        <!-- Search form -->
+                        <form th:action="@{/admin}" method="get">
+                            <input type="hidden" name="view" value="transactions" />
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-4">
+                                    <input type="text" class="form-control" placeholder="Search ticker" name="ticker" th:value="${ticker}">
+                                </div>
+                                <div class="col-md-4">
+                                    <input type="number" class="form-control" placeholder="Search User ID" name="userId" th:value="${userId}">
+                                </div>
+                                <div class="col-md-4">
+                                    <select class="form-select" name="transactionType">
+                                        <option value="">Any Type</option>
+                                        <option value="Buy" th:selected="${transactionType == 'Buy'}">Buy</option>
+                                        <option value="Sell" th:selected="${transactionType == 'Sell'}">Sell</option>
+                                        <option value="Edit" th:selected="${transactionType == 'Edit'}">Edit</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-end">
+                                <button type="submit" class="btn btn-primary">Search</button>
+                            </div>
+                        </form>
                         <table class="table table-hover mb-0 thin-grey-border small-text">
                             <thead class="text-center custom-table-header">
                             <tr>

@@ -67,7 +67,6 @@ public class SecurityConfig {
                     .and()
                     .formLogin()
                     .loginPage("/login")
-                    // Removed the defaultSuccessUrl so Spring Security can redirect to the previous url
                     .permitAll()
                     .and()
                     .logout()

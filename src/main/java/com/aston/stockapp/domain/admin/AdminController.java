@@ -25,7 +25,7 @@ public class AdminController {
     @Autowired private TransactionRepository transactionRepository;
 
     @GetMapping("")
-    public String dashboard(@RequestParam(required = false) String view, Model model, Pageable pageable, Authentication authentication, RedirectAttributes redirectAttributes) {
+    public String dashboard(@RequestParam(required = false) String view, @RequestParam(required = false) String ticker, @RequestParam(required = false) Long userId, @RequestParam(required = false) String transactionType, Model model, Pageable pageable, Authentication authentication, RedirectAttributes redirectAttributes) {
         // Check if user is authenticated and has ADMIN role
         if (authentication == null || !authentication.isAuthenticated() || authentication.getAuthorities().stream().noneMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
             redirectAttributes.addFlashAttribute("errorMsg", "You must be logged in as an admin to view this page.");
@@ -36,28 +36,81 @@ public class AdminController {
         long portfolioCount = portfolioRepository.count();
         long transactionCount = transactionRepository.count();
 
+        Page<User> usersPage = Page.empty();
+        Page<Portfolio> portfoliosPage = Page.empty();
+        Page<Transaction> transactionsPage = Page.empty();
 
-        if (view == null || view.isEmpty()) {
-            view = "users";
-        }
+        view = (view == null || view.isEmpty()) ? "users" : view;
 
         if ("users".equals(view)) {
-            Page<User> usersPage = userRepository.findAll(pageable);
-            model.addAttribute("usersPage", usersPage);
+            usersPage = userRepository.findAll(pageable);
         } else if ("portfolios".equals(view)) {
-            Page<Portfolio> portfoliosPage = portfolioRepository.findAllExisting(pageable);
-            model.addAttribute("portfoliosPage", portfoliosPage);
+            portfoliosPage = portfolioRepository.findAllExisting(pageable);
         } else if ("transactions".equals(view)) {
-            Page<Transaction> transactionsPage = transactionRepository.findAllExisting(pageable);
-            model.addAttribute("transactionsPage", transactionsPage);
+            transactionsPage = transactionRepository.findByFilters(
+                    ticker,
+                    userId,
+                    "Any".equals(transactionType) ? null : transactionType,
+                    pageable
+            );
         }
 
+        model.addAttribute("usersPage", usersPage);
+        model.addAttribute("portfoliosPage", portfoliosPage);
+        model.addAttribute("transactionsPage", transactionsPage);
         model.addAttribute("userCount", userCount);
         model.addAttribute("portfolioCount", portfolioCount);
         model.addAttribute("transactionCount", transactionCount);
         model.addAttribute("view", view);
+
         return "admin-dashboard";
     }
+
+
+
+//    @GetMapping("")
+//    public String dashboard(@RequestParam(required = false) String view, @RequestParam(required = false) String ticker, @RequestParam(required = false) Long userId, Model model, Pageable pageable, Authentication authentication, RedirectAttributes redirectAttributes) {
+//        // Check if user is authenticated and has ADMIN role
+//        if (authentication == null || !authentication.isAuthenticated() || authentication.getAuthorities().stream().noneMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
+//            redirectAttributes.addFlashAttribute("errorMsg", "You must be logged in as an admin to view this page.");
+//            return "redirect:/login";
+//        }
+//
+//        long userCount = userRepository.count();
+//        long portfolioCount = portfolioRepository.count();
+//        long transactionCount = transactionRepository.count();
+//
+//
+//        if (view == null || view.isEmpty()) {
+//            view = "users";
+//        }
+//
+//        if ("users".equals(view)) {
+//            Page<User> usersPage = userRepository.findAll(pageable);
+//            model.addAttribute("usersPage", usersPage);
+//        } else if ("portfolios".equals(view)) {
+//            Page<Portfolio> portfoliosPage = portfolioRepository.findAllExisting(pageable);
+//            model.addAttribute("portfoliosPage", portfoliosPage);
+//        } else if ("transactions".equals(view)) {
+//            Page<Transaction> transactionsPage = null;
+//            if (ticker != null && !ticker.isEmpty()) {
+//                // Assuming the method findByStockTicker exists in transactionRepository
+//                transactionsPage = transactionRepository.findByStockTicker(ticker.toUpperCase(), pageable);
+//            } else if (userId != null) {
+//                // Assuming the method findByUserId exists in transactionRepository
+//                transactionsPage = transactionRepository.findByUserId(userId, pageable);
+//            } else {
+//                transactionsPage = transactionRepository.findAllExisting(pageable);
+//            }
+//            model.addAttribute("transactionsPage", transactionsPage);
+//        }
+//
+//        model.addAttribute("userCount", userCount);
+//        model.addAttribute("portfolioCount", portfolioCount);
+//        model.addAttribute("transactionCount", transactionCount);
+//        model.addAttribute("view", view);
+//        return "admin-dashboard";
+//    }
 
     @DeleteMapping("/deleteUser/{userId}")
     public @ResponseBody String deleteUser(@PathVariable Long userId, RedirectAttributes redirectAttributes) {
