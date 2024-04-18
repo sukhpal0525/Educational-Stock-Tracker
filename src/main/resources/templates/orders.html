@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Orders</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.8.1/font/bootstrap-icons.min.css" rel="stylesheet">
     <style>
         .apexcharts-zoom-icon {
             margin-left: 1rem;
@@ -131,19 +132,28 @@
                             <ul class="pagination pagination-sm mb-0">
                                 <!-- Previous page Link -->
                                 <li class="page-item" th:classappend="${transactionsPage.first ? 'disabled' : ''}">
-                                    <a class="page-link" th:href="@{/orders(ticker=${ticker}, transactionType=${transactionType}, page=${transactionsPage.number - 1}, size=${transactionsPage.size})}" aria-label="Previous">
+                                    <a class="page-link"
+                                       th:href="@{/orders(ticker=${ticker}, transactionType=${transactionType}, page=${transactionsPage.number - 1}, size=${transactionsPage.size})}"
+                                       aria-label="Previous">
                                         <span aria-hidden="true">&laquo;</span>
                                     </a>
                                 </li>
                                 <li class="page-item" th:classappend="${transactionsPage.number == 0 ? 'active' : ''}">
-                                    <a class="page-link" th:href="@{/orders(ticker=${ticker}, transactionType=${transactionType}, page=0, size=${transactionsPage.size})}">1</a>
+                                    <a class="page-link"
+                                       th:href="@{/orders(ticker=${ticker}, transactionType=${transactionType}, page=0, size=${transactionsPage.size})}">1</a>
                                 </li>
-                                <li class="page-item" th:if="${transactionsPage.totalPages > 1}" th:each="pageNum : ${#numbers.sequence(1, transactionsPage.totalPages - 1)}" th:classappend="${pageNum == transactionsPage.number ? 'active' : ''}">
-                                    <a class="page-link" th:href="@{/orders(ticker=${ticker}, transactionType=${transactionType}, page=${pageNum}, size=${transactionsPage.size})}" th:text="${pageNum + 1}"></a>
+                                <li class="page-item" th:if="${transactionsPage.totalPages > 1}"
+                                    th:each="pageNum : ${#numbers.sequence(1, transactionsPage.totalPages - 1)}"
+                                    th:classappend="${pageNum == transactionsPage.number ? 'active' : ''}">
+                                    <a class="page-link"
+                                       th:href="@{/orders(ticker=${ticker}, transactionType=${transactionType}, page=${pageNum}, size=${transactionsPage.size})}"
+                                       th:text="${pageNum + 1}"></a>
                                 </li>
                                 <!-- Next page Link -->
                                 <li class="page-item" th:classappend="${transactionsPage.last ? 'disabled' : ''}">
-                                    <a class="page-link" th:href="@{/orders(ticker=${ticker}, transactionType=${transactionType}, page=${transactionsPage.number + 1}, size=${transactionsPage.size})}" aria-label="Next">
+                                    <a class="page-link"
+                                       th:href="@{/orders(ticker=${ticker}, transactionType=${transactionType}, page=${transactionsPage.number + 1}, size=${transactionsPage.size})}"
+                                       aria-label="Next">
                                         <span aria-hidden="true">&raquo;</span>
                                     </a>
                                 </li>
@@ -162,34 +172,48 @@
                     <p class="mb-0">Understanding Your Order History <i class="bi bi-journal-text"></i></p>
                 </div>
                 <div class="card-body p-4" style="overflow-y: auto;">
-                    <p class="text-muted small" style="text-align: justify;">
-                        The "My Orders" page provides a permanent record of all your orders (or transactions). You may find this useful for organisational purposes, as all your actions are saved for you with filtering and search functionality.
+                    <p class="small" style="text-align: justify;">
+                        The "My Orders" page provides a permanent record of all your orders (or transactions). You may
+                        find this useful for organisational purposes, as all your actions are saved for you with
+                        filtering and search functionality.
                     </p>
 
                     <h6 class="fw-bold">1. Transaction Overview <i class="bi bi-list-check"></i></h6>
-                    <p class="text-muted small" style="text-align: justify;">
-                        Each row in the table represents a transaction, detailing the <strong>Stock Ticker</strong>, <strong>Quantity</strong>, <strong>Purchase Price</strong>, <strong>Total Cost</strong>, <strong>Type</strong> of transaction, and the <strong>Date & Time</strong> it was executed. Transactions are ordered from oldest to newest, helping you track your investment journey over time.
+                    <p class="small" style="text-align: justify;">
+                        Each row in the table represents a transaction, detailing the <strong>Stock Ticker</strong>,
+                        <strong>Quantity</strong>, <strong>Purchase Price</strong>, <strong>Total Cost</strong>,
+                        <strong>Type</strong> of transaction, and the <strong>Date & Time</strong> it was executed.
+                        Transactions are ordered from oldest to newest, helping you track your investment journey over
+                        time.
                     </p>
 
                     <h6 class="fw-bold">2. Types of Transactions <i class="bi bi-arrow-left-right"></i></h6>
-                    <p class="text-muted small" style="text-align: justify;">
-                        Transactions include <strong>Buy</strong>, <strong>Sell</strong>, <strong>Sell (Deleted)</strong>, and <strong>Edit</strong>. "Sell (Deleted)" appears when you remove a stock from your portfolio, executing a default sell operation at the current market price. This categorisation can help in quick assessment and decision-making for future investments.
+                    <p class="small" style="text-align: justify;">
+                        Transactions include <strong>Buy</strong>, <strong>Sell</strong>, <strong>Sell
+                        (Deleted)</strong>, and <strong>Edit</strong>. "Sell (Deleted)" appears when you remove a stock
+                        from your portfolio, executing a default sell operation at the current market price. This
+                        categorisation can help in quick assessment and decision-making for future investments.
                     </p>
 
                     <h6 class="fw-bold">3. Significance of Record-Keeping <i class="bi bi-archive-fill"></i></h6>
-                    <p class="text-muted small" style="text-align: justify;">
-                        Maintaining a detailed record of transactions is useful for assessing the effectiveness of your investment strategy. It helps identify successful trades and identify areas of non-growth so you can adjust your investment choices in the future.
+                    <p class="small" style="text-align: justify;">
+                        Maintaining a detailed record of transactions is useful for assessing the effectiveness of your
+                        investment strategy. It helps identify successful trades and identify areas of non-growth so you
+                        can adjust your investment choices in the future.
                     </p>
 
                     <h6 class="fw-bold">4. Navigating Your Transactions <i class="bi bi-table"></i></h6>
-                    <p class="text-muted small" style="text-align: justify;">
-                        Utilise the pagination feature at the bottom of the table to navigate through your transaction history. This feature ensures that the information remains organised and easily accessible, no matter the volume of your trading activities.
+                    <p class="small" style="text-align: justify;">
+                        Utilise the pagination feature at the bottom of the table to navigate through your transaction
+                        history. This feature ensures that the information remains organised and easily accessible, no
+                        matter the volume of your trading activities.
                     </p>
 
                     <div class="alert alert-secondary mt-3" role="alert">
                         <i class="bi bi-info-circle-fill"></i>
-                        <span class="text-muted small">Tip: Use the search bar and filter dropdown to quickly find transactions for a specific stock and type. This powerful feature allows you to filter by transaction type (Buy, Sell, Sell (Deleted), Edit) while searching for a specific stock ticker, enabling precise and efficient review of your order history. Need to start over? The reset button clears your search/filter criteria, allowing you to easily adjust your view.</span>
+                        <span class="text-muted small">Tip: Use the search bar and filter dropdown to find transactions for a specific ticker and type. This allows you to filter by transaction type (Buy, Sell, Sell (Deleted), Edit) while searching for a specific stock ticker for more precise searching. <br><br> Need to start over? The reset button clears your search/filter criteria.</span>
                     </div>
+                </div>
             </div>
         </div>
     </div>
