@@ -1,4 +1,4 @@
-SET FOREIGN_KEY_CHECKS = 0;
+SET FOREIGN_KEY_CHECKS = 1;
 -- TRUNCATE TABLE `User`;
 
 INSERT INTO `User` (`UserID`, `isAdmin`, `Username`, `Password`, `balance`) VALUES
@@ -83,6 +83,10 @@ INSERT INTO PortfolioItem (portfolio_id, stock_ticker, quantity, purchasePrice, 
 
 INSERT INTO `transactions` (`user_id`, `dateTime`, `stockTicker`, `quantity`, `purchasePrice`, `totalCost`, `transactionType`) VALUES
     (2, NOW(), 'AAPL', 10, 140, 1400, 'Buy'),
+    (2, NOW(), 'AAPL', 10, 140, 1400, 'Buy'),
+    (2, NOW(), 'AAPL', 10, 140, 1400, 'Buy'),
+    (2, NOW(), 'AAPL', 10, 140, 1400, 'Buy'),
+
     (2, NOW(), 'MSFT', 5, 240, 1200, 'Buy'),
     (2, NOW(), 'AMZN', 1, 3000, 3000, 'Buy'),
     (2, NOW(), 'TSLA', 3, 680, 2040, 'Buy'),
@@ -110,7 +114,7 @@ INSERT INTO `transactions` (`user_id`, `dateTime`, `stockTicker`, `quantity`, `p
 --     (2, NOW(), 'CVX', 14, 115.00, 1610.00, 'Buy'),
 --     (2, NOW(), 'BA', 9, 200.00, 1800.00, 'Sell');
 
-SET FOREIGN_KEY_CHECKS = 0;
+--SET FOREIGN_KEY_CHECKS = 1;
 
 INSERT INTO learning_content (title, category, summary, detail) VALUES
     ('Basics of Investing', 'Investing-Basics', 'Start your investment journey by understanding the basics.', '<h5>Investment Types:</h5><ul><li><strong>Stocks:</strong> Investments that offer a share in the company’s profits.</li><li><strong>Bonds:</strong> Fixed investments that are considered less risky than stocks.</li><li><strong>Mutual Funds:</strong> Pooled money from many investors to invest in a diversified portfolio of stocks and bonds.</li><li><strong>ETFs:</strong> Exchange-traded funds that are similar to mutual funds but traded like individual stocks.</ul><p>Understanding your <strong>risk tolerance</strong> and setting <strong>clear financial goals</strong> are key to developing a diversified portfolio that aligns with your investment objectives.</p>'),

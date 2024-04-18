@@ -1,13 +1,17 @@
 package com.aston.stockapp.api;
 
+import com.aston.stockapp.domain.news.NewsResponse;
+import com.aston.stockapp.domain.news.StockNews;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -145,23 +149,24 @@ public class YahooFinanceService {
         }
     }
 
-    public YahooStock fetchStockNews(String symbol) {
+    public List<StockNews> fetchNewsByTicker(String ticker) {
         HttpHeaders headers = new HttpHeaders();
-        headers.set("X-RapidAPI-Key", "f9c5bc36d9mshef13f8f9db483efp19d8cdjsn72b3775c848f");
-        headers.set("X-RapidAPI-Host", "apidojo-yahoo-finance-v1.p.rapidapi.com");
+        headers.set("X-RapidAPI-Key", API_KEY);
+        headers.set("X-RapidAPI-Host", "yahoo-finance15.p.rapidapi.com");
         HttpEntity<String> entity = new HttpEntity<>(headers);
 
-        String url = API_URL_SECONDARY + "/stock/v3/get-profile" + "?symbol=" + symbol + "&region=US&lang=en-US";
-        ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
+        String url = API_URL + "/api/yahoo/ne/news/" + ticker;
+        ResponseEntity<NewsResponse> response = restTemplate.exchange(url, HttpMethod.GET, entity, NewsResponse.class);
 
-        try {
-            System.out.println(response);
-            return converter.convertProfile(response.getBody());
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-            return null;
+        NewsResponse newsResponse = response.getBody();
+        if (newsResponse != null) {
+            // Extract and return the list of StockNews objects
+            return newsResponse.getItem();
+        } else {
+            return Collections.emptyList();
         }
     }
+
 
 //    public String fetchHistoricalData(String symbol, String range) {
 //        System.out.println(symbol + "Range: " + range);

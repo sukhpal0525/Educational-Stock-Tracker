@@ -1,9 +1,13 @@
 package com.aston.stockapp.api;
 
 import com.aston.stockapp.domain.portfolio.PortfolioService;
+import com.aston.stockapp.domain.transaction.Transaction;
 import com.aston.stockapp.domain.transaction.TransactionRepository;
 import com.aston.stockapp.user.CustomUserDetails;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -26,7 +30,7 @@ public class YahooFinanceController {
     }
 
     @GetMapping("/{symbol}")
-    public String getStockData(@PathVariable String symbol, @RequestParam(defaultValue = "10y") String range, @RequestParam(required = false) Integer quantity, Authentication authentication, Model model) {
+    public String getStockData(@PathVariable String symbol, @RequestParam(defaultValue = "10y") String range, @RequestParam(required = false) Integer quantity, Authentication authentication, Model model, @PageableDefault(size = 5) Pageable pageable) {
         YahooStock stockFuture = yahooFinanceService.fetchStockData(symbol);
         String historicalDataFuture = yahooFinanceService.fetchHistoricalData(symbol, range);
         YahooStock stockInfoFuture = yahooFinanceService.fetchStockInfo(symbol);
@@ -53,13 +57,17 @@ public class YahooFinanceController {
         if (authentication != null && authentication.isAuthenticated()) {
             Long userId = ((CustomUserDetails) authentication.getPrincipal()).getUser().getId();
             model.addAttribute("ownsStock", portfolioService.ownsStock(symbol));
-            model.addAttribute("transactions", transactionRepository.findByUserIdAndStockTicker(userId, symbol));
+            Page<Transaction> transactions = transactionRepository.findByUserIdAndStockTicker(userId, symbol, pageable);
+            model.addAttribute("transactions", transactions);
+            model.addAttribute("hasTransactions", transactions.hasContent());
             model.addAttribute("quantity", portfolioService.getPortfolio(userId).getItems());
             portfolioService.getCurrentUserBalance().ifPresent(balance -> model.addAttribute("balance", balance));
+        } else {
+            model.addAttribute("transactions", Page.empty());
+            model.addAttribute("hasTransactions", false);
         }
         return "stock";
     }
-
 
 //    @GetMapping("/stocks/{symbol}/data")
 //    @ResponseBody
