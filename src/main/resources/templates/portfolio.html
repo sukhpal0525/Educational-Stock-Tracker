@@ -155,7 +155,7 @@
                             <td class="align-middle text-center" th:text="${item.stock.name}"></td>
                             <td class="align-middle text-center">
                                 <span th:if="${editingItemId != item.id}" th:text="${item.quantity}"></span>
-                                <input class="form-control form-control-sm" style="text-align: center;" th:if="${editingItemId == item.id}" type="number" th:value="${item.quantity}" th:name="newQuantity" form="saveForm-${item.id}" min="1"/>
+                                <input class="form-control form-control-sm" style="text-align: center;" th:if="${editingItemId == item.id}" type="number" th:value="${item.quantity}" th:name="newQuantity" form="saveForm-${item.id}" step="0.01" required min="0.01"/>
                             </td>
                             <td class="align-middle text-center">
                                 <span th:if="${editingItemId != item.id}" th:text="${#numbers.formatDecimal(item.purchasePrice, 1, 'COMMA', 2, 'POINT')}"></span>
@@ -173,6 +173,7 @@
                                 <form th:if="${editingItemId == item.id}" id="saveForm-${item.id}" th:action="@{/portfolio/save}" method="post" class="d-inline-block">
                                     <input type="hidden" th:name="id" th:value="${item.id}" />
                                     <button type="submit" class="btn btn-primary btn-sm" title="Save">Save</button>
+                                    <a href="/portfolio" class="btn btn-secondary btn-sm" title="Cancel">Cancel</a>
                                 </form>
                                 <a th:if="${editingItemId != item.id}" th:href="@{/portfolio/edit/(id=${item.id}, page=${itemsPage.number}, size=${itemsPage.size})}" class="bi bi-pencil-square mx-1" title="Edit"></a>
                                 <a th:if="${editingItemId != item.id}" href="javascript:void(0)" class="bi bi-trash mx-1" title="Delete" th:data-item-id="${item.id}" data-bs-toggle="modal" data-bs-target="#deleteConfirmationModal"></a>
@@ -238,7 +239,7 @@
                     <div class="text-center mb-4">
                         <h6>Portfolio Volatility</h6>
                         <div id="portfolioVolatilityChart"></div>
-                        <div id="explanationText" class="portfolio-analysis-explanation">Explanation message</div>
+                        <div id="explanationText" class="portfolio-analysis-explanation"></div>
                     </div>
                 </div>
             </div>
@@ -246,8 +247,8 @@
 
     <div class="row">
         <div class="col-12">
-            <div class="card mb-4">
-                <div class="card-header">Performance</div>
+            <div class="card mb-4" style="width: 104rem;">
+                <div class="card-header">Portfolio Performance Forecast</div>
                 <div class="card-body">
                     <div id="portfolioPerformanceChart"></div>
                 </div>
