@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Stock Page</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.8.1/font/bootstrap-icons.min.css" rel="stylesheet">
     <style>
         .apexcharts-zoom-icon {
             margin-left: 1rem;
@@ -14,8 +15,6 @@
         }
         .full-height {
             height: auto;
-        }
-        .card-table {
         }
         .thin-grey-border th,
         .thin-grey-border td {
@@ -33,37 +32,28 @@
         .card-header small {
             margin-bottom: 0.5rem;
         }
+        #buySellTabs .nav-item {
+            flex-grow: 1;
+            text-align: center;
+        }
+
+        #buySellTabs .nav-link {
+            width: auto;
+            text-align: center;
+        }
     </style>
 </head>
 
 <body>
 
-<nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom py-1">
-    <div class="container-fluid" style="max-width: 90%;">
-        <a class="navbar-brand fw-bold pe-2" href="#">TEST</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
-            <div class="navbar-nav me-auto">
-                <a class="nav-link small-text active" href="#">Home</a>
-                <a class="nav-link small-text" href="#">Stocks</a>
-                <a class="nav-link small-text" href="#">News</a>
-                <a class="nav-link small-text" href="#">Portfolio</a>
-            </div>
-            <div class="navbar-nav ms-auto">
-                <a class="nav-link d-flex justify-content-center align-items-center" href="#" style="width: 2.5rem; height: 2.5rem; background-color: white; border-radius: 50%; position: relative;">
-                    <img src="/icons/bell-solid.svg" alt="Notifications" style="height: 1.5rem; position: absolute;">
-                </a>
-                <button class="btn btn-primary btn-sm ms-2" type="button">Login</button>
-            </div>
-        </div>
-    </div>
-</nav>
+<div th:replace="fragments/navbar :: navbar"></div>
 
 <div class="container-fluid bg-light wide-container full-height p-4">
 
-    <!-- Balance -->
+    <div th:if="${transactionSuccess}" class="alert alert-success text-center text-dark fs-5" role="alert"><span th:text="${transactionSuccess}"></span></div>
+    <div th:if="${transactionFailed}" class="alert alert-danger text-center text-dark fs-5" role="alert"><span th:text="${transactionFailed}"></span></div>
+
+    <!-- Stock data -->
     <div class="row mb-4 g-3">
         <div class="col-sm-3 d-flex">
             <div class="card flex-grow-1">
@@ -95,7 +85,7 @@
 
                         <tr>
                             <td>Market Cap:</td>
-                            <td class="text-end" th:text="'$' + ${stockData.marketCap}"></td>
+                            <td class="text-end" th:text="'$' + ${#numbers.formatInteger(stockData.marketCap, 0, 'COMMA')}"></td>
                         </tr>
 
                         <tr style="height: 60px;">
@@ -115,7 +105,7 @@
                         </tr>
                         <tr>
                             <td>Website:</td>
-                            <td class="text-end" th:text="${stockInfo.website}"></td>
+                            <td class="text-end"><a href="${stockInfo.website}" th:href="@{${stockInfo.website}}" target="_blank" rel="noopener noreferrer" th:text="${stockInfo.website}">Website Link</a></td>
                         </tr>
                         </tbody>
                     </table>
@@ -124,11 +114,11 @@
         </div>
 
         <!-- Chart card -->
-        <div class="col-sm-7">
-            <div class="card h-auto" style="min-height: 400px;">
+        <div class="col-sm-7 d-flex">
+            <div class="card h-auto flex-grow-1 align-items-stretch" style="min-height: 400px;">
                 <div class="card-header d-flex justify-content-between align-items-start">
                     <div>
-                        <h4 class="card-title" th:text="${stockData.name} + ' (' + ${stockData.ticker} + ')'">Stock Name (Ticker)</h4>
+                        <h4 class="card-title mr-2" th:text="${stockData.name} + ' (' + ${stockData.ticker} + ')'">Stock Name (Ticker)</h4>
                         <small class="text-muted" th:text="${stockData.fullExchangeName}">Exchange Name</small>
                     </div>
                     <h4 th:text="'$' + ${#numbers.formatDecimal(stockData.price, 1, 'COMMA', 2, 'POINT')}"></h4>
@@ -152,31 +142,82 @@
                     </p>
                 </div>
             </div>
+
             <div class="card flex-grow-1">
-                <div class="card-header">Buy / Sell</div>
+                <div class="card-header">
+                    <ul class="nav nav-tabs card-header-tabs justify-content-center" id="buySellTabs" role="tablist">
+                        <li class="nav-item">
+                            <a class="nav-link active" id="buy-tab" data-bs-toggle="tab" href="#buy" role="tab" aria-controls="buy" aria-selected="true">Buy</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="sell-tab" data-bs-toggle="tab" href="#sell" role="tab" aria-controls="sell" aria-selected="false">Sell</a>
+                        </li>
+                    </ul>
+                </div>
                 <div class="card-body">
-                    <div class="container">
-                        <div class="row justify-content-center">
-                            <div class="col-md-auto">
-                                <form th:action="@{/portfolio/add}" method="post" class="form-inline justify-content-center">
-                                    <input type="hidden" name="symbol" th:value="${stockData.ticker}" />
-<!--                                    <div class="form-group mx-sm-3 mb-2 d-flex justify-content-center">-->
-<!--                                        <input type="range" id="balanceSlider" name="balancePercentage" min="0" max="100" value="0" class="custom-slider mx-2" onchange="updateQuantityAndCost()" oninput="updateQuantityDisplay(this.value)" />-->
-<!--                                        <span id="percentageValue">0%</span>-->
-<!--                                    </div>-->
-                                    <div class="form-group mx-sm-3 mb-2">
-                                        <input type="number" id="quantity" name="quantity" class="form-control" placeholder="Quantity" required oninput="updateCostFromQuantity(this.value)" />
+
+                    <form id="tradeForm" th:action="@{/portfolio/add}" method="post">
+                        <div class="container mb-3 mr-0">
+                            <div class="row mb-3">
+                                <div class="col-auto">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="priceOption" id="marketPriceOption" value="market" checked onchange="togglePriceInput('market')">
+                                        <label class="form-check-label" for="marketPriceOption">Use Market Price</label>
                                     </div>
-                                    <!-- Cost -->
-                                    <div class="form-group mx-sm-3 mb-2 d-flex align-items-baseline">
-                                        <span class="form-label me-2">Cost:</span>
-                                        <span id="costDisplay">$0</span>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="priceOption" id="customPriceOption" value="custom" onchange="togglePriceInput('custom')">
+                                        <label class="form-check-label" for="customPriceOption">Enter Custom Price</label>
                                     </div>
-                                    <button type="submit" class="btn btn-primary mb-2">Add to Portfolio</button>
-                                </form>
+                                </div>
+                            </div>
+
+                            <input type="hidden" name="symbol" th:value="${stockData.ticker}">
+                            <input type="hidden" name="action" id="formAction" value="buy">
+
+                            <!-- Quantity input row -->
+                            <div class="row align-items-center mb-3">
+                                <div class="col-auto">
+                                    <label for="quantity" class="form-label">Quantity:</label>
+                                </div>
+                                <div class="col">
+                                    <input type="number" id="quantity" name="quantity" class="form-control" placeholder="Quantity" required min="1">
+                                </div>
+                            </div>
+
+                            <!-- Custom price input row -->
+                            <div class="row align-items-center mb-3" id="customPriceGroup" style="display: none;">
+                                <div class="col-auto">
+                                    <label for="customPrice" class="form-label">Price:</label>
+                                </div>
+                                <div class="col">
+                                    <div class="input-group">
+                                        <span class="input-group-text">$</span>
+                                        <input type="number" id="customPrice" name="customPrice" class="form-control" th:placeholder="${stockData.price}" aria-label="Custom price" step="0.01" required min="0.01">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Cost display row -->
+                            <div class="row align-items-center mb-3">
+                                <div class="col-auto">
+                                    <label class="form-label">Cost:</label>
+                                </div>
+                                <div class="col">
+                                    <span id="costDisplay" class="form-control-plaintext mb-0">$0</span>
+                                </div>
+<!--                                <div th:if="${#authorization.expression('isAuthenticated()')}">-->
+<!--                                    <span>Quantity Owned: </span><span th:text="${ownsStock ? quantity : '0'}">0</span>-->
+<!--                                </div>-->
+                            </div>
+
+                            <!-- Submit -->
+                            <div class="row">
+                                <div class="col text-center">
+                                    <button id="actionButton" type="submit" class="btn btn-primary">Buy</button>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    </form>
                 </div>
             </div>
         </div>
@@ -197,7 +238,7 @@
     <div class="row g-3">
         <div class="col-xxl-6">
             <div class="card card-table">
-                <div class="card-header">Buy Orders</div>
+                <div class="card-header">Your Orders For: <span th:text="${stockData.ticker}"></span></div>
                 <div class="card-body p-4 pb-2">
                     <table class="table table-hover mb-0 thin-grey-border small-text">
                         <thead class="text-center custom-table-header">
@@ -207,18 +248,21 @@
                             <th scope="col">Quantity</th>
                             <th scope="col">Purchase Price</th>
                             <th scope="col">Total Cost</th>
+                            <th scope="col">Type</th>
                         </tr>
                         </thead>
                         <tbody class="text-center">
                         <tr th:each="transaction : ${transactions}">
-                            <td th:text="${#temporals.format(transaction.dateTime, 'dd-MM-yy (HH:mm)')}">19-02-24 (15:02)</td>
-                            <td th:text="${transaction.stockTicker}">Stock Ticker</td>
-                            <td th:text="${transaction.quantity}">Quantity</td>
-                            <td th:text="'$' + ${transaction.purchasePrice}">Purchase Price</td>
-                            <td th:text="'$' + ${transaction.totalCost}">Total Cost</td>
+                            <td th:text="${#temporals.format(transaction.dateTime, 'dd-MM-yy (HH:mm)')}"></td>
+                            <td th:text="${transaction.stockTicker}"></td>
+                            <td th:text="${transaction.quantity}"></td>
+                            <td th:text="'$' + ${transaction.purchasePrice}"></td>
+                            <td th:text="'$' + ${transaction.totalCost}"></td>
+                            <td th:text="${transaction.transactionType}"></td>
                         </tr>
-                        <!-- Empty rows if no transactions-->
-                        <tr th:unless="${hasTransactions}" th:each="i : ${#numbers.sequence(1, 5)}">
+                        <!-- Dynamic empty rows based on the number of transactions displayed -->
+                        <tr th:if="${transactions.totalElements < 5}" th:each="i : ${#numbers.sequence(transactions.totalElements, 4)}">
+                            <td>&nbsp;</td>
                             <td>&nbsp;</td>
                             <td>&nbsp;</td>
                             <td>&nbsp;</td>
@@ -228,83 +272,81 @@
                         </tbody>
                     </table>
                 </div>
+                <!-- Pagination -->
                 <nav aria-label="Page navigation" class="text-end pe-4">
                     <ul class="pagination pagination-sm justify-content-end mb-4">
-                        <li class="page-item"><a class="page-link" href="#">Previous</a></li>
-                        <li class="page-item active" aria-current="page"><a class="page-link" href="#">1</a></li>
-                        <li class="page-item"><a class="page-link" href="#">2</a></li>
-                        <li class="page-item"><a class="page-link" href="#">3</a></li>
-                        <li class="page-item"><a class="page-link" href="#">Next</a></li>
+                        <!-- Previous Page Link -->
+                        <li class="page-item" th:classappend="${transactions.isEmpty() ? 'disabled' : ''}">
+                            <a class="page-link" th:href="@{/stocks/{symbol}(symbol=${stockData.ticker}, page=${transactions.number - 1}, size=${transactions.size})}" aria-label="Previous">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+
+                        <!-- Page Numbers; Only show if totalPages > 0 -->
+                        <li th:if="${transactions.totalPages > 0}" th:each="pageNum : ${#numbers.sequence(0, transactions.totalPages - 1)}" class="page-item" th:classappend="${pageNum == transactions.number ? 'active' : ''}">
+                            <a class="page-link" th:href="@{/stocks/{symbol}(symbol=${stockData.ticker}, page=${pageNum}, size=${transactions.size})}" th:text="${pageNum + 1}"></a>
+                        </li>
+
+                        <!-- Next Page Link -->
+                        <li class="page-item" th:classappend="${transactions.isEmpty() || transactions.isLast() ? 'disabled' : ''}">
+                            <a class="page-link" th:href="@{/stocks/{symbol}(symbol=${stockData.ticker}, page=${transactions.number + 1}, size=${transactions.size})}" aria-label="Next">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
                     </ul>
                 </nav>
             </div>
+
         </div>
         <div class="col-xxl-6">
             <div class="card card-table">
-                <div class="card-header">Your Sell Orders</div>
-                <div class="card-body p-4">
-                    <table class="table table-hover mb-0 thin-grey-border small-text">
-                        <thead class="text-center custom-table-header">
-                        <tr>
-                            <th scope="col">Company Name</th>
-                            <th scope="col">Stock Price</th>
-                            <th scope="col">Change</th>
-                            <th scope="col">% Change</th>
-                            <th scope="col">Volume</th>
-                        </tr>
-                        </thead>
-                        <tbody class="text-center">
-                        <tr>
-                            <td>Apple Inc NASDAQ</td>
-                            <td>$147.95</td>
-                            <td>$1.60</td>
-                            <td>1.5%</td>
-                            <td>52,56,333</td>
-                        </tr>
-                        <tr>
-                            <td>Apple Inc NASDAQ</td>
-                            <td>$147.95</td>
-                            <td>$1.60</td>
-                            <td>1.5%</td>
-                            <td>52,56,333</td>
-                        </tr>
-                        <tr>
-                            <td>Apple Inc NASDAQ</td>
-                            <td>$147.95</td>
-                            <td>$1.60</td>
-                            <td>1.5%</td>
-                            <td>52,56,333</td>
-                        </tr>
-                        <tr>
-                            <td>Apple Inc NASDAQ</td>
-                            <td>$147.95</td>
-                            <td>$1.60</td>
-                            <td>1.5%</td>
-                            <td>52,56,333</td>
-                        </tr>
-                        <tr>
-                            <td>Apple Inc NASDAQ</td>
-                            <td>$147.95</td>
-                            <td>$1.60</td>
-                            <td>1.5%</td>
-                            <td>52,56,333</td>
-                        </tr>
-                        </tbody>
-                    </table>
+                <div class="card-header">Need Help?</div>
+                <div class="card-body p-4 pb-2" style="overflow-y: auto; height: 19.5rem;">
+                    <p class="text-muted small">
+                        Welcome to your stock overview guide. Let’s walk through the key components on this page to help you understand the vital statistics of your chosen stock and make informed decisions.
+                    </p>
+
+                    <h6 class="fw-bold">1. Stock Overview & Market Position <i class="bi bi-graph-up-arrow"></i></h6>
+                    <p class="text-muted small">
+                        At the top, you'll find the stock's price chart, <strong>Name</strong>, and <strong>Ticker</strong> of the stock, alongside the <strong>Current Price</strong>. These are your starting points to identify the stock and its latest trading price.
+                        <br> Example: <code th:text="'$' + ${#numbers.formatDecimal(stockData.price, 1, 'COMMA', 2, 'POINT')}"></code> for <code th:text="${stockData.name}"></code>.
+                    </p>
+
+                    <h6 class="fw-bold">2. Market Data Insights <i class="bi bi-bar-chart-line-fill"></i></h6>
+                    <p class="text-muted small">
+                        On the left of the chart overview, look for the <strong>Price</strong>, <strong>Day High and Low</strong>, and <strong>Market Cap</strong>. These figures give you a snapshot of the stock's current market standing and volatility.
+                        <br> Be aware of vastly different day high and low values, this can indicate that the stock is highly volatile.
+                    </p>
+
+                    <h6 class="fw-bold">3. Company Fundamentals <i class="bi bi-building"></i></h6>
+                    <p class="text-muted small">
+                        The left card provides fundamentals: <strong>Sector, Industry,</strong> and the company's <strong>Website</strong>. This context is crucial for understanding the business landscape and potential growth sectors.
+                    </p>
+
+                    <h6 class="fw-bold">4. Analyzing Performance <i class="bi bi-speedometer2"></i></h6>
+                    <p class="text-muted small">
+                        The price chart in the center is a powerful tool for visualising the stock’s performance over time. Pair this with the <strong>Current Price</strong> and <strong>Day High and Low</strong> to assess its valuation and profitability by comparing its recent data to historical price data.
+                    </p>
+
+                    <h6 class="fw-bold">5. Your Financial Actions <i class="bi bi-cash-coin"></i></h6>
+                    <p class="text-muted small">
+                        Ready to make a move? The buy/sell card on the right allows you to trade at market prices or your own custom price and quantity. Remember, your current balance is <code th:text="'$' + ${#numbers.formatDecimal(balance, 1, 'COMMA', 2, 'POINT')}"></code>. Ensure you have sufficient funds before proceeding. Head over to My Portfolio to see its performance.
+                    </p>
+
+                    <h6 class="fw-bold">6. Make Informed Decisions <i class="bi bi-eye-fill"></i></h6>
+                    <p class="text-muted small">
+                        Each stock's journey is unique. Compare the <strong>historical price data</strong> against the current price to gauge its short-term and long-term trajectory. Consider how this aligns with your investment goals.
+                    </p>
+
+                    <div class="alert alert-secondary mt-3" role="alert">
+                        <i class="bi bi-lightbulb-fill"></i> Tip: Diversify your portfolio to mitigate risks. Explore different sectors and industries to build a robust investment strategy.
+                    </div>
                 </div>
-                <nav aria-label="Page navigation" class="text-end pe-4">
-                    <ul class="pagination pagination-sm justify-content-end mb-4">
-                        <li class="page-item"><a class="page-link" href="#">Previous</a></li>
-                        <li class="page-item active" aria-current="page"><a class="page-link" href="#">1</a></li>
-                        <li class="page-item"><a class="page-link" href="#">2</a></li>
-                        <li class="page-item"><a class="page-link" href="#">3</a></li>
-                        <li class="page-item"><a class="page-link" href="#">Next</a></li>
-                    </ul>
-                </nav>
             </div>
         </div>
     </div>
 </div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 <script th:inline="javascript">
@@ -349,7 +391,7 @@
                 }
             },
         },
-        colors: ['#22b682'],
+        colors: ['#008FFB'],
         fill: {
             type: 'gradient',
             gradient: {
@@ -357,7 +399,7 @@
                 opacityFrom: 0.5,
                 opacityTo: 0.6,
                 stops: [70, 100],
-                colors: ["#22b682", "#e8f8f5"]
+                colors: ["#008FFB", "#80D0FF"]
             }
         },
         dataLabels: {
@@ -369,14 +411,22 @@
                 enabled: false
             },
             min: initialZoom.min,
-            max: initialZoom.max
+            max: initialZoom.max,
+            labels: {
+                style: {
+                    fontSize: '12px',
+                }
+            }
         },
         yaxis: {
             labels: {
                 formatter: function(val) {
                     return `$${parseFloat(val).toFixed(2)}`;
+                },
+                style: {
+                    fontSize: '12px'
                 }
-            }
+            },
         },
         tooltip: {
             x: {
@@ -391,7 +441,7 @@
         stroke: {
             curve: 'straight',
             width: 2,
-            colors: ['#22b682']
+            colors: ['#6699d1']
         }
     };
 
@@ -402,42 +452,74 @@
 
 <script th:inline="javascript">
     /*<![CDATA[*/
-    const stockPrice = /*[[${stockData.price}]]*/ '100';
-    // const balance = /*[[${balance}]]*/ '1000';
+    var stockPrice = [[${stockData.price}]];
 
-    // function updateQuantityAndCost() {
-    //     const sliderValue = document.getElementById('balanceSlider').value;
-    //     const percentageValue = document.getElementById('percentageValue');
-    //     const quantityInput = document.getElementById('quantity');
-    //     const costDisplay = document.getElementById('costDisplay');
+    document.addEventListener('DOMContentLoaded', function() {
+        function updateCostDisplay() {
+            const quantity = document.getElementById('quantity').value || 0;
+            const isCustomPriceSelected = document.getElementById('customPriceOption').checked;
+            const customPriceInput = document.querySelector('input[name="customPrice"]');
+            const customPrice = isCustomPriceSelected && customPriceInput.value ? parseFloat(customPriceInput.value) : stockPrice;
+            const totalCost = quantity * customPrice;
+            const buyTab = document.getElementById('buy-tab');
+            const sellTab = document.getElementById('sell-tab');
+            const actionInput = document.getElementById('formAction');
+            const actionButton = document.getElementById('actionButton');
 
-    //     // Update the displayed slider percentage
-    //     percentageValue.textContent = sliderValue + '%';
+            buyTab.addEventListener('click', function() {
+                actionInput.value = "buy"; // Update hidden input to 'buy'
+                actionButton.textContent = "Buy";
+                actionButton.className = "btn btn-primary mb-2";
+            });
 
-    //     // Calculate the quantity based on slider value and update the quantity input field
-    //     const quantity = (balance * sliderValue / 100) / stockPrice;
-    //     quantityInput.value = Math.floor(quantity);
+            sellTab.addEventListener('click', function() {
+                actionInput.value = "sell"; // Update hidden input to 'sell'
+                actionButton.textContent = "Sell";
+                actionButton.className = "btn btn-danger mb-2";
+            });
 
-    //     // Calculate and update the cost based on the updated quantity
-    //     const cost = quantityInput.value * stockPrice;
-    //     costDisplay.textContent = `$${cost.toFixed(2)}`;
-    // }
+            // Format the total cost with commas for thousands and beyond
+            document.getElementById('costDisplay').innerText = `$${totalCost.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        }
 
-    function updateCostFromQuantity(quantity) {
-        const costDisplay = document.getElementById('costDisplay');
-        const cost = quantity * stockPrice;
-        costDisplay.textContent = `$${cost.toFixed(2)}`;
-    }
+        function togglePriceInput(option) {
+            const customPriceGroup = document.getElementById('customPriceGroup');
+            const customPriceInput = customPriceGroup.querySelector('input[name="customPrice"]');
+            customPriceGroup.style.display = option === 'custom' ? '' : 'none';
+            customPriceInput.disabled = option !== 'custom';
+            updateCostDisplay();
+        }
 
-    // Initialise values on page load
-    // updateQuantityAndCost();
+        document.querySelectorAll('#buySellTabs a').forEach(tab => {
+            tab.addEventListener('click', function(e) {
+                e.preventDefault();
+                const actionValue = this.id.split('-')[0]; // "buy" or "sell"
+                document.getElementById('formAction').value = actionValue;
+                document.getElementById('actionButton').textContent = actionValue.charAt(0).toUpperCase() + actionValue.slice(1); // Change button text to "Buy" or "Sell"
+                document.getElementById('actionButton').className = actionValue === 'buy' ? 'btn btn-primary mb-2' : 'btn btn-danger mb-2';
+                new bootstrap.Tab(this).show();
+            });
+        });
 
-    // Event listener for the range slider to update values
-    // document.getElementById('balanceSlider').addEventListener('input', updateQuantityAndCost);
+        document.querySelectorAll('input[name="priceOption"]').forEach(option => option.addEventListener('change', () => togglePriceInput(option.value)));
+        document.getElementById('quantity').addEventListener('input', updateCostDisplay);
+        document.querySelector('input[name="customPrice"]').addEventListener('input', updateCostDisplay);
 
-    // Event listener for the quantity input to update cost in realtime
-    document.getElementById('quantity').addEventListener('input', function() {
-        updateCostFromQuantity(this.value);
+        updateCostDisplay();
+        togglePriceInput('market');
+    });
+
+
+    document.addEventListener("DOMContentLoaded", function() {
+        const cards = document.querySelectorAll(".flip-card");
+
+        cards.forEach((card) => {
+            const frontButton = card.querySelector(".flip-card-btn-turn-to-back");
+            const backButton = card.querySelector(".flip-card-btn-turn-to-front");
+
+            frontButton.onclick = () => card.classList.add('do-flip');
+            backButton.onclick = () => card.classList.remove('do-flip');
+        });
     });
     /*]]>*/
 </script>
