@@ -6,16 +6,18 @@
     <title>Stock Page</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.18/css/bootstrap-select.min.css">
-
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.8.1/font/bootstrap-icons.min.css" rel="stylesheet">
     <style>
         .wide-container {
             max-width: 90%;
         }
         .full-height {
-            height: auto;
+            min-height: 100vh;
         }
-        .custom-margin-top {
-            margin-top: 3rem;
+        .card-header h2 {
+            width: 100%;
+            text-align: center;
+            margin-top: 2rem;
         }
     </style>
 </head>
@@ -25,6 +27,8 @@
 <body>
 <div class="container-fluid bg-light wide-container full-height p-0">
 
+    <div th:if="${searchFailed}" class="alert alert-danger text-center text-dark fs-5 mt-4" role="alert"><span th:text="${searchFailed}"></span></div>
+
     <div class="p-5 rounded-3" style="background-color: #eaf4ff;">
         <div class="container-fluid py-2">
             <div class="row align-items-center">
@@ -32,7 +36,7 @@
                     <h1 class="display-6 fw-bold">Virtual Portfolio Tracker</h1>
                     <p class="fs-4 mt-4">Get started by searching for a stock below, or view your portfolio below.</p>
                     <div class="d-flex align-items-center gap-5">
-                        <form class="d-flex" style="min-width: 500px" action="/stocks/search" method="get">
+                        <form class="d-flex" style="min-width: 600px" action="/stocks/search" method="get">
                             <div class="input-group input-group-lg">
                                 <input class="form-control" type="search" placeholder="Enter a stock ticker or name:" aria-label="Search" name="query">
                                 <button class="btn btn-outline-secondary text-dark" type="submit" style="background-color: #f8f9fa;">Search</button>
@@ -41,14 +45,14 @@
                         <a href="/portfolio" class="btn btn-primary btn-outline-dark text-light btn-lg">View Your Portfolio</a>
                     </div>
                 </div>
-                <div class="col-lg-5">
-                    <div class="text-center">
-                        <img src="https://via.placeholder.com/700x300" class="img-fluid rounded shadow-sm">
-                    </div>
-                </div>
+<!--                <div class="col-lg-5">-->
+<!--                    <div class="text-center">-->
+<!--                        <img src="https://via.placeholder.com/700x300" class="img-fluid rounded shadow-sm">-->
+<!--                    </div>-->
+<!--                </div>-->
             </div>
 
-            <div class="row mt-5">
+            <div class="row" style="margin-top: 5rem;">
                 <div class="col-md-4">
                     <h2 class="h4 fw-bold">Real Market Data</h2>
                     <p>Access real market data to monitor your investments and adjust your strategy as the market changes.</p>
@@ -67,34 +71,41 @@
 
 
 
-
-
-
-    <div class="container my-4">
+    <div class="container-fluid my-4">
         <div class="row justify-content-center">
             <!-- First Card -->
-            <div class="col-md-auto d-flex">
-                <div class="card" style="width: 24rem; height: 24rem;">
-                    <div class="card-body d-flex align-items-center justify-content-center">
-                        <p class="card-text">1</p>
+            <div class="col d-flex justify-content-center">
+                <div class="card mx-2 text-center" style="width: 26rem; height: 24rem;">
+                    <div class="card-header bg-transparent border-bottom-0">
+                        <h2 class="position-absolute">1</h2>
+                    </div>
+                    <div class="card-body d-flex flex-column align-items-start justify-content-center p-4">
+                        <h5 class="card-title"><i class="bi bi-journal-bookmark-fill"></i> Learn the Basics</h5>
+                        <p class="card-text" style="text-align: justify;">Start by exploring the <a href="/learn">educational content</a> to understand the basics of investing, risk management, and how to analyse stocks.</p>
                     </div>
                 </div>
             </div>
 
-            <!-- Second Card -->
-            <div class="col-md-auto d-flex" style="margin-left: 30px; margin-right: 30px;">
-                <div class="card" style="width: 24rem; height: 24rem;">
-                    <div class="card-body d-flex align-items-center justify-content-center">
-                        <p class="card-text">2</p>
+            <div class="col d-flex justify-content-center">
+                <div class="card mx-2 text-center" style="width: 26rem; height: 24rem;">
+                    <div class="card-header bg-transparent border-bottom-0">
+                        <h2 class="position-absolute">2</h2>
+                    </div>
+                    <div class="card-body d-flex flex-column align-items-start justify-content-center p-4">
+                        <h5 class="card-title"><i class="bi bi-search"></i> Find & Analyse Stocks</h5>
+                        <p class="card-text" style="text-align: justify;">Utilise the search feature to find stocks. Check out charts for historical data and other key metrics to aid in your investment decisions.</p>
                     </div>
                 </div>
             </div>
 
-            <!-- Third Card -->
-            <div class="col-md-auto d-flex">
-                <div class="card" style="width: 24rem; height: 24rem;">
-                    <div class="card-body d-flex align-items-center justify-content-center">
-                        <p class="card-text">3</p>
+            <div class="col d-flex justify-content-center">
+                <div class="card mx-2 text-center" style="width: 26rem; height: 24rem;">
+                    <div class="card-header bg-transparent border-bottom-0">
+                        <h2 class="position-absolute">3</h2>
+                    </div>
+                    <div class="card-body d-flex flex-column align-items-start justify-content-center p-4">
+                        <h5 class="card-title"><i class="bi bi-pie-chart-fill"></i> Manage Your Portfolio</h5>
+                        <p class="card-text" style="text-align: justify;">View your portfolio to monitor its performance, risk analysis, and get forecasts. Keep track of transactions and generate reports for deeper insights.</p>
                     </div>
                 </div>
             </div>
@@ -110,40 +121,9 @@
 
 <script>
     $(document).ready(function () {
-        // Initialize Bootstrap Select for enhanced dropdowns
         $('.selectpicker').selectpicker();
     });
 </script>
 
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<!--            <div class="card mb-4">-->
-<!--                <div class="card-header">Company Summary</div>-->
-<!--                <div class="card-body">-->
-<!--                    <p class="card-text" style="text-align: justify;"></p>-->
-<!--                </div>-->
-<!--        </div>-->
-
-
-
-
-
-
-
-
-
-
