@@ -7,40 +7,19 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.8.1/font/bootstrap-icons.min.css" rel="stylesheet">
     <style>
-        .apexcharts-zoom-icon {
-            margin-left: 1rem;
-        }
-        .wide-container {
-            max-width: 90%;
-        }
-        .full-height {
-            height: auto;
-        }
+        .apexcharts-zoom-icon { margin-left: 1rem; }
+        .wide-container { max-width: 90%; }
+        .full-height { height: auto; }
         .thin-grey-border th,
-        .thin-grey-border td {
-            border: 1px solid #dee2e6;
-        }
-        .small-text {
-            font-size: 0.85rem;
-        }
-        .custom-table-header {
-            background-color: #F1F5FA;
-        }
-        .card-header .card-title {
-            margin-bottom: 0.25rem;
-        }
-        .card-header small {
-            margin-bottom: 0.5rem;
-        }
-        #buySellTabs .nav-item {
-            flex-grow: 1;
-            text-align: center;
-        }
-
-        #buySellTabs .nav-link {
-            width: auto;
-            text-align: center;
-        }
+        .thin-grey-border td { border: 1px solid #dee2e6; }
+        .small-text { font-size: 0.85rem; }
+        .custom-table-header { background-color: #F1F5FA; }
+        .card-header .card-title { margin-bottom: 0.25rem; }
+        .card-header small { margin-bottom: 0.5rem; }
+        #buySellTabs .nav-item { flex-grow: 1; text-align: center; }
+        #buySellTabs .nav-link { width: auto; text-align: center; }
+        .nav-pills .nav-link { color: #007bff; border-radius: 0; }
+        .nav-pills .nav-link.active, .nav-pills .nav-link:hover { background-color: #b3d7ff; color: #000000; border-color: #b3d7ff; }
     </style>
 </head>
 
@@ -64,7 +43,7 @@
                         <tr>
                             <td>Price:</td>
                             <td class="text-end">
-                                <span th:text="'$' + ${stockData.price}"></span>
+                                <span th:text="'$' + ${#numbers.formatDecimal(stockData.price, 1, 'COMMA', 2, 'POINT')}"></span>
 
                                 <span th:if="${stockData.regularMarketChangePercent >= 0}"
                                       th:text="' (' + '+' + ${#numbers.formatDecimal(stockData.regularMarketChangePercent, 1, 'COMMA', 2, 'POINT')} + '%)'"
@@ -192,22 +171,21 @@
                                 <div class="col">
                                     <div class="input-group">
                                         <span class="input-group-text">$</span>
-                                        <input type="number" id="customPrice" name="customPrice" class="form-control" th:placeholder="${stockData.price}" aria-label="Custom price" step="0.01" required min="0.01">
+                                        <input type="number" id="customPrice" name="customPrice" class="form-control"
+                                               th:placeholder="${#numbers.formatDecimal(stockData.price, 1, 'COMMA', 2, 'POINT')}"
+                                               aria-label="Custom price" step="0.01" required min="0.01">
                                     </div>
                                 </div>
                             </div>
 
                             <!-- Cost display row -->
-                            <div class="row align-items-center mb-3">
-                                <div class="col-auto">
-                                    <label class="form-label">Cost:</label>
+                            <div class="row align-items-center mb-3 g-0">
+                                <div class="col-auto pe-2">
+                                    <label class="form-label mb-0">Cost:</label>
                                 </div>
                                 <div class="col">
                                     <span id="costDisplay" class="form-control-plaintext mb-0">$0</span>
                                 </div>
-<!--                                <div th:if="${#authorization.expression('isAuthenticated()')}">-->
-<!--                                    <span>Quantity Owned: </span><span th:text="${ownsStock ? quantity : '0'}">0</span>-->
-<!--                                </div>-->
                             </div>
 
                             <!-- Submit -->
