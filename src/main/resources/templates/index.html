@@ -19,6 +19,15 @@
             text-align: center;
             margin-top: 2rem;
         }
+        .nav-pills .nav-link {
+            color: #007bff;
+            border-radius: 0;
+        }
+        .nav-pills .nav-link.active, .nav-pills .nav-link:hover {
+            background-color: #b3d7ff;
+            color: #000000;
+            border-color: #b3d7ff;
+        }
     </style>
 </head>
 
@@ -39,7 +48,7 @@
                         <form class="d-flex" style="min-width: 600px" action="/stocks/search" method="get">
                             <div class="input-group input-group-lg">
                                 <input class="form-control" type="search" placeholder="Enter a stock ticker or name:" aria-label="Search" name="query">
-                                <button class="btn btn-outline-secondary text-dark" type="submit" style="background-color: #f8f9fa;">Search</button>
+                                <button class="btn text-dark" type="submit" style="background-color: #f8f9fa; border: 1px solid #ced4da;">Search</button>
                             </div>
                         </form>
                         <a href="/portfolio" class="btn btn-primary btn-outline-dark text-light btn-lg">View Your Portfolio</a>
@@ -63,7 +72,7 @@
                 </div>
                 <div class="col-md-4">
                     <h2 class="h4 fw-bold">Risk-Free Environment</h2>
-                    <p>Gain insight into investing with a .</p>
+                    <p>Gain insight into investing without financial risk.</p>
                 </div>
             </div>
         </div>

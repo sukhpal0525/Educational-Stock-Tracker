@@ -58,7 +58,8 @@
             overflow: auto;
         }
         .portfolio-analysis-card {
-            max-height: 49rem;
+            height: 49rem;
+            width: 24rem;
             display: flex;
             flex-direction: column;
             overflow: hidden;
@@ -71,24 +72,47 @@
             overflow-x: hidden;
             flex-grow: 1;
             padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
             box-sizing: border-box;
+        }
+        #portfolioVolatilityChart {
+            margin: 20px 0;
+        }
+
+        #riskMessage, #explanationText {
+            text-align: center;
+            width: 100%;
+            margin: 10px 0;
+        }
+
+        #riskMessage {
+            font-size: 18px;
+            font-weight: bold;
         }
         .portfolio-analysis-explanation {
             text-align: justify;
             font-size: 16px;
             font-weight: normal;
             padding: 0 15px;
-            margin-top: -60px;
-            margin-bottom: 20px;
-            box-sizing: border-box;
+        }
+        .nav-pills .nav-link {
+            color: #007bff;
+            border-radius: 0;
+        }
+        .nav-pills .nav-link.active, .nav-pills .nav-link:hover {
+            background-color: #b3d7ff;
+            color: #000000;
+            border-color: #b3d7ff;
         }
     </style>
 </head>
 
-<body>
-
 <div th:replace="fragments/navbar :: navbar"></div>
 
+<body>
 <div class="container-fluid bg-light wide-container full-height p-4">
 
     <div class="row mb-4">
@@ -191,12 +215,17 @@
                         </tbody>
                     </table>
                     <div class="row align-items-end">
-                        <div class="col">
+                        <div class="col-auto pe-2">
                             <form th:action="@{/portfolio/updatePrices}" method="post">
                                 <button type="submit" class="btn btn-outline-secondary text-dark">Refresh Prices</button>
                             </form>
                         </div>
-                        <div class="col-6 text-end">
+                        <div class="col-auto">
+                            <form th:action="@{/portfolio/generateReport}" method="get">
+                                <button type="submit" class="btn btn-primary">Download Portfolio Report</button>
+                            </form>
+                        </div>
+                        <div class="col text-end">
                             <nav aria-label="Page navigation">
                                 <ul class="pagination pagination-sm mb-0 justify-content-end">
                                     <!-- Previous page Link -->
@@ -225,29 +254,24 @@
             </div>
         </div>
 
-            <div class="card portfolio-analysis-card" style="height: 49rem; width: 24rem;">
-                <div class="card-header portfolio-analysis-header">Portfolio Analysis</div>
-                <div class="card-body portfolio-analysis-body">
-                    <div class="d-flex justify-content-center align-items-center flex-column mb-4" style="margin-bottom: 4rem;">
-                        <h6 class="mb-3 text-center w-100">Sector Allocation</h6>
-                        <div class="d-flex justify-content-center" style="overflow: hidden;">
-                            <div id="sectorDistributionChart"></div>
-                        </div>
-                        <div class="legend-container text-center mt-4"></div>
-                    </div>
-                    <!-- Portfolio volatility chart container -->
-                    <div class="text-center mb-4">
-                        <h6>Portfolio Volatility</h6>
-                        <div id="portfolioVolatilityChart"></div>
-                        <div id="explanationText" class="portfolio-analysis-explanation"></div>
-                    </div>
+        <div class="card portfolio-analysis-card">
+            <div class="card-header portfolio-analysis-header">Portfolio Analysis</div>
+            <div class="card-body portfolio-analysis-body">
+                <h6 class="text-center">Sector Allocation</h6>
+                <div id="sectorDistributionChart" class="my-0"></div>
+                <div class="legend-container text-center mt-2 mb-4"></div>
+                <h6 class="text-center mt-2" style="margin-bottom: 0;">Portfolio Volatility</h6>
+                <div id="portfolioVolatilityChart" class="my-0"></div>
+                <div id="riskMessage" style="margin-bottom: 40px; margin-top: -60px;">
                 </div>
+                <div id="explanationText" class="portfolio-analysis-explanation" style="margin-top: -20px;"></div>
             </div>
+        </div>
     </div>
 
     <div class="row">
         <div class="col-12">
-            <div class="card mb-4" style="width: 104rem;">
+            <div class="card mb-4 mt-0" style="width: 104.5rem;">
                 <div class="card-header">Portfolio Performance Forecast</div>
                 <div class="card-body">
                     <div id="portfolioPerformanceChart"></div>
@@ -441,35 +465,25 @@
         chart: {
             height: 350,
             type: 'radialBar',
-            offsetY: -30
         },
         plotOptions: {
             radialBar: {
                 startAngle: -90,
                 endAngle: 90,
                 hollow: {
-                    margin: 5,
                     size: '50%',
                     background: 'transparent',
                 },
                 track: {
                     background: hasVolatilityData ? '#e7e7e7' : '#A9A9A9',
                     strokeWidth: '100%',
-                    margin: 2,
                 },
                 dataLabels: {
                     name: {
-                        offsetY: 30,
-                        show: true,
-                        color: '#888',
-                        fontSize: '16px',
-                        fontWeight: 600,
-                        formatter: function () {
-                            return riskMessage;
-                        }
+                        show: false,
                     },
                     value: {
-                        offsetY: -30,
+                        offsetY: 0,
                         fontSize: '22px',
                         color: undefined,
                         formatter: function(val) {
@@ -504,6 +518,7 @@
     var chartRadial = new ApexCharts(document.querySelector("#portfolioVolatilityChart"), optionsRadial);
     chartRadial.render();
 
+    document.getElementById("riskMessage").innerText = riskMessage;
     document.getElementById("explanationText").innerHTML = explanationMessage;
     /*]]>*/
 </script>
