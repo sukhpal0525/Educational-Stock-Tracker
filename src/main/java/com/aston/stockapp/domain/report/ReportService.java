@@ -13,6 +13,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.text.DecimalFormat;
 
 @Service
 public class ReportService {
@@ -34,9 +35,9 @@ public class ReportService {
 
             // Portfolio Summary
             document.add(new Paragraph("Portfolio Summary", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12)));
-            document.add(new Paragraph("Total Cost: $" + portfolio.getTotalCost()));
-            document.add(new Paragraph("Total Value: $" + portfolio.getTotalValue()));
-            document.add(new Paragraph("Total Change (%): " + portfolio.getTotalChangePercent()));
+            document.add(new Paragraph("Total Cost: $" + formatBigDecimal(portfolio.getTotalCost())));
+            document.add(new Paragraph("Total Value: $" + formatBigDecimal(portfolio.getTotalValue())));
+            document.add(new Paragraph("Total Change: " + formatBigDecimal(portfolio.getTotalChangePercent()) + "%"));
             document.add(new Paragraph(" "));
 
             // Table for Stock Details
@@ -48,7 +49,7 @@ public class ReportService {
             // Font for table content
             Font tableFont = FontFactory.getFont(FontFactory.HELVETICA, 8);
             Font tableHeaderFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8, BaseColor.WHITE);
-            Font greenFont = new Font(Font.FontFamily.HELVETICA, 8, Font.NORMAL, BaseColor.GREEN);
+            Font greenFont = new Font(Font.FontFamily.HELVETICA, 8, Font.NORMAL, new BaseColor(0, 128, 0));
             Font redFont = new Font(Font.FontFamily.HELVETICA, 8, Font.NORMAL, BaseColor.RED);
 
             // Define column headers
@@ -67,11 +68,11 @@ public class ReportService {
             // Adding stock details to the table
             BigDecimal totalPortfolioValue = BigDecimal.valueOf(portfolio.getTotalValue());
             for (PortfolioItem item : portfolio.getItems()) {
-                BigDecimal itemCost = BigDecimal.valueOf(item.getPurchasePrice() * item.getQuantity());
-                BigDecimal itemValue = BigDecimal.valueOf(item.getStock().getCurrentPrice() * item.getQuantity());
-                BigDecimal changeDollar = itemValue.subtract(itemCost);
-                BigDecimal changePercent = itemCost.compareTo(BigDecimal.ZERO) > 0 ? changeDollar.divide(itemCost, 4, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100)) : BigDecimal.ZERO;
-                BigDecimal allocationPercent = totalPortfolioValue.compareTo(BigDecimal.ZERO) > 0 ? itemValue.divide(totalPortfolioValue, 4, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100)) : BigDecimal.ZERO;
+                BigDecimal itemCost = new BigDecimal(item.getPurchasePrice() * item.getQuantity()).setScale(2, RoundingMode.HALF_UP);
+                BigDecimal itemValue = new BigDecimal(item.getStock().getCurrentPrice() * item.getQuantity()).setScale(2, RoundingMode.HALF_UP);
+                BigDecimal changeDollar = itemValue.subtract(itemCost).setScale(2, RoundingMode.HALF_UP);
+                BigDecimal changePercent = itemCost.compareTo(BigDecimal.ZERO) > 0 ? changeDollar.divide(itemCost, 4, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100)).setScale(2, RoundingMode.HALF_UP) : BigDecimal.ZERO;
+                BigDecimal allocationPercent = totalPortfolioValue.compareTo(BigDecimal.ZERO) > 0 ? itemValue.divide(totalPortfolioValue, 4, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100)).setScale(2, RoundingMode.HALF_UP) : BigDecimal.ZERO;
 
                 Font colorFont = changeDollar.compareTo(BigDecimal.ZERO) >= 0 ? greenFont : redFont;
 
@@ -88,7 +89,6 @@ public class ReportService {
                 addTableDataCell(table, allocationPercent.setScale(2, RoundingMode.HALF_UP) + "%", tableFont);
             }
             document.add(table);
-            document.add(new Paragraph("------------------------------------------------"));
 
         } catch (DocumentException | IOException e) {
             e.printStackTrace();
@@ -102,5 +102,10 @@ public class ReportService {
         cell.setHorizontalAlignment(Element.ALIGN_CENTER);
         cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
         table.addCell(cell);
+    }
+
+    private String formatBigDecimal(double value) {
+        DecimalFormat df = new DecimalFormat("#,##0.00");
+        return df.format(value);
     }
 }
