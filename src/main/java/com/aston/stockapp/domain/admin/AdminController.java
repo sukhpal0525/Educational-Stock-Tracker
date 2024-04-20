@@ -47,12 +47,7 @@ public class AdminController {
         } else if ("portfolios".equals(view)) {
             portfoliosPage = portfolioRepository.findAllExisting(pageable);
         } else if ("transactions".equals(view)) {
-            transactionsPage = transactionRepository.findByFilters(
-                    ticker,
-                    userId,
-                    "Any".equals(transactionType) ? null : transactionType,
-                    pageable
-            );
+            transactionsPage = transactionRepository.findByFilters(ticker, userId, "Any".equals(transactionType) ? null : transactionType, pageable);
         }
 
         model.addAttribute("usersPage", usersPage);

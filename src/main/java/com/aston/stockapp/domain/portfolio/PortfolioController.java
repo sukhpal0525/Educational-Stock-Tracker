@@ -35,6 +35,7 @@ public class PortfolioController {
     @Autowired private PortfolioService portfolioService;
     @Autowired private YahooFinanceService yahooFinanceService;
     @Autowired private PortfolioItemRepository portfolioItemRepository;
+    @Autowired private PortfolioUpdateService portfolioUpdateService;
     @Autowired private TransactionRepository transactionRepository;
     @Autowired private UserRepository userRepository;
 
@@ -310,11 +311,11 @@ public class PortfolioController {
 //        return "redirect:/stocks/" + symbol;
 //    }
 
-//    @PostMapping("/portfolio/updatePrices")
-//    public String updateStockPricesManually() {
-//        portfolioUpdateService.manualUpdateStockPrices();
-//        return "redirect:/portfolio";
-//    }
+    @PostMapping("/portfolio/updatePrices")
+    public String updateStockPricesManually() {
+        portfolioUpdateService.manualUpdateStockPrices();
+        return "redirect:/portfolio";
+    }
 
     @GetMapping("/portfolio/delete/{id}")
     public String deletePortfolioItem(@PathVariable Long id, RedirectAttributes redirectAttributes) {
