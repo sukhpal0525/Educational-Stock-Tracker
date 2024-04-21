@@ -27,10 +27,10 @@
         <div class="col-md-6 col-lg-4">
             <div class="text-center mb-4">
                 <!-- Registration success message -->
-                <div th:if="${successMsg}" class="alert alert-success" th:text="${successMsg}"></div>
+                <div th:if="${successMsg}" class="alert alert-success text-dark" th:text="${successMsg}"></div>
 
                 <!-- Error message -->
-                <div th:if="${errorMsg}" class="alert alert-danger" th:text="${errorMsg}"></div>
+                <div th:if="${errorMsg}" class="alert alert-danger text-dark" th:text="${errorMsg}"></div>
 
                 <!-- Logout message -->
                 <div th:if="${msg}" class="alert alert-success" th:text="${msg}"></div>

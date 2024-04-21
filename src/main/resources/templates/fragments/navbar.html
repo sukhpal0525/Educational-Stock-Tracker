@@ -44,7 +44,7 @@
 
             <div class="navbar-nav ms-auto align-items-center">
                 <div th:if="${#authorization.expression('hasRole(''ROLE_ADMIN'')')}">
-                    <a class="nav-link" href="/admin" th:classappend="${#httpServletRequest.getRequestURI().startsWith('/admin') ? 'active' : ''}">Admin Dashboard</a>
+                    <a class="nav-link text-dark" href="/admin" th:classappend="${#httpServletRequest.getRequestURI().startsWith('/admin') ? 'active' : ''}">Admin Dashboard</a>
                 </div>
                 <div th:if="${#authorization.expression('isAuthenticated()')} and ${!#authorization.expression('hasRole(''ROLE_ADMIN'')')}">
                     <div class="text-center p-2" style="background-color: #f8f9fa; border-bottom-left-radius: .25rem; border-bottom-right-radius: .25rem;">
