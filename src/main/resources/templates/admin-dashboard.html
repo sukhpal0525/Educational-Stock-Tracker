@@ -3,7 +3,8 @@
 <head>
     <title>Admin Dashboard</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.8.1/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.8.1/font/bootstrap-icons.min.css"
+          rel="stylesheet">
     <style>
         .wide-container {
             max-width: 90%;
@@ -15,38 +16,32 @@
         .thin-grey-border td {
             border: 1px solid #dee2e6;
         }
-
         .small-text {
             font-size: 0.85rem;
         }
-
         .custom-table-header {
             background-color: #F1F5FA;
         }
         .card-header small {
             margin-bottom: 0.5rem;
         }
+
         .nav-pills .nav-link {
             border-radius: 0.25rem;
             color: #007bff;
         }
-
-
         .card-header .card-title {
             margin-bottom: 0.25rem;
         }
-
         .nav-pills .nav-link {
             border-radius: 0;
             color: #007bff;
         }
-
         .nav-pills .nav-link.active, .nav-pills .nav-link:hover {
             background-color: #b3d7ff;
             color: #000000;
             border-radius: 0;
         }
-
         .badge {
             margin-left: 5px;
         }
@@ -83,63 +78,68 @@
             </div>
         </div>
 
-        <!-- Main content -->
         <div class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
             <div th:if="${view == 'users'}">
                 <div class="card mb-4" style="width: 76.5rem;">
                     <div class="card-header">All Users</div>
                     <div class="card-body p-4">
-                        <table class="table table-hover mb-0 thin-grey-border small-text">
-                            <thead class="text-center custom-table-header">
-                            <tr>
-                                <th>User ID</th>
-                                <th>Username</th>
-                                <th>Balance</th>
-                                <th>Actions</th>
-                            </tr>
-                            </thead>
-                            <tbody class="text-center">
-                            <tr th:if="${!usersPage.hasContent()}">
-                                <td colspan="4">No entries</td>
-                            </tr>
-                            <tr th:each="user : ${usersPage.content}">
-                                <td th:text="${user.id}"></td>
-                                <td th:text="${user.username}"></td>
-                                <td th:text="'$' + ${#numbers.formatDecimal(user.balance, 1, 'COMMA', 2, 'POINT')}"></td>
-                                <td>
-                                    <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteUserModal" th:if="${user.username != 'admin'}" th:attr="data-user-id=${user.id}">
-                                        <i class="bi bi-trash"></i> Delete
-                                    </button>
-                                </td>
-                            </tr>
-                            <tr th:if="${usersPage.hasContent()}" th:each="i : ${#numbers.sequence(2, 12 - usersPage.content.size())}">
-                                <td>&nbsp;</td>
-                                <td>&nbsp;</td>
-                                <td>&nbsp;</td>
-                                <td>&nbsp;</td>
-                            </tr>
-                            </tbody>
-                        </table>
+                        <div class="container-fluid px-0">
+                            <table class="table table-hover mb-0 thin-grey-border small-text">
+                                <thead class="text-center custom-table-header">
+                                <tr>
+                                    <th>User ID</th>
+                                    <th>Username</th>
+                                    <th>Balance</th>
+                                    <th>Actions</th>
+                                </tr>
+                                </thead>
+                                <tbody class="text-center">
+                                <tr th:if="${!usersPage.hasContent()}">
+                                    <td colspan="4">No entries</td>
+                                </tr>
+                                <tr th:each="user : ${usersPage.content}">
+                                    <td th:text="${user.id}"></td>
+                                    <td th:text="${user.username}"></td>
+                                    <td th:text="'$' + ${#numbers.formatDecimal(user.balance, 1, 'COMMA', 2, 'POINT')}"></td>
+                                    <td>
+                                        <button type="button" class="btn btn-danger btn-sm px-2" data-bs-toggle="modal"
+                                                data-bs-target="#deleteUserModal" th:if="${user.username != 'admin'}"
+                                                th:attr="data-user-id=${user.id}">
+                                            <i class="bi bi-trash" style="font-size: 0.75rem;"></i> <span style="font-size: 0.8rem;">Delete</span>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr th:if="${usersPage.hasContent()}"
+                                    th:each="i : ${#numbers.sequence(2, 12 - usersPage.content.size())}">
+                                    <td>&nbsp;</td>
+                                    <td>&nbsp;</td>
+                                    <td>&nbsp;</td>
+                                    <td>&nbsp;</td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <nav aria-label="Page navigation" class="mt-3">
+                            <ul class="pagination">
+                                <li class="page-item" th:classappend="${usersPage.first ? 'disabled' : ''}">
+                                    <a class="page-link" th:href="@{/admin/(view='users', page=${usersPage.number - 1}, size=${usersPage.size})}" aria-label="Previous">
+                                        <span aria-hidden="true">&laquo;</span>
+                                    </a>
+                                </li>
+                                <li class="page-item"
+                                    th:each="pageNum : ${#numbers.sequence(0, usersPage.totalPages - 1)}"
+                                    th:classappend="${pageNum == usersPage.number ? 'active' : ''}">
+                                    <a class="page-link" th:href="@{/admin/(view='users', page=${pageNum}, size=${usersPage.size})}"
+                                       th:text="${pageNum + 1}"></a>
+                                </li>
+                                <li class="page-item" th:classappend="${usersPage.last ? 'disabled' : ''}">
+                                    <a class="page-link" th:href="@{/admin/(view='users', page=${usersPage.number + 1}, size=${usersPage.size})}" aria-label="Next">
+                                        <span aria-hidden="true">&raquo;</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </nav>
                     </div>
-                    <nav aria-label="Page navigation">
-                        <ul class="pagination">
-                            <li class="page-item" th:classappend="${usersPage.first ? 'disabled' : ''}">
-                                <a class="page-link"
-                                   th:href="@{/admin/(view='users', page=${usersPage.number - 1}, size=${usersPage.size})}">Previous</a>
-                            </li>
-                            <li class="page-item"
-                                th:each="pageNum : ${#numbers.sequence(0, usersPage.totalPages - 1)}"
-                                th:classappend="${pageNum == usersPage.number ? 'active' : ''}">
-                                <a class="page-link"
-                                   th:href="@{/admin/(view='users', page=${pageNum}, size=${usersPage.size})}"
-                                   th:text="${pageNum + 1}">Page Number</a>
-                            </li>
-                            <li class="page-item" th:classappend="${usersPage.last ? 'disabled' : ''}">
-                                <a class="page-link"
-                                   th:href="@{/admin/(view='users', page=${usersPage.number + 1}, size=${usersPage.size})}">Next</a>
-                            </li>
-                        </ul>
-                    </nav>
                 </div>
             </div>
 
@@ -147,39 +147,67 @@
                 <div class="card mb-4" style="width: 76.5rem;">
                     <div class="card-header">All Portfolios</div>
                     <div class="card-body p-4 pb-2">
-                        <table class="table table-hover mb-0 thin-grey-border small-text">
-                            <thead class="text-center custom-table-header">
-                            <tr>
-                                <th>User ID</th>
-                                <th>Total Cost</th>
-                                <th>Total Value</th>
-                                <th>Total Change (%)</th>
-                            </tr>
-                            </thead>
-                            <tbody class="text-center">
-                            <tr th:if="${!portfoliosPage.hasContent()}">
-                                <td colspan="4">No portfolios found</td>
-                            </tr>
-                            <tr th:if="${!portfoliosPage.hasContent()}" th:each="i : ${#numbers.sequence(1, 11)}">
-                                <td>&nbsp;</td>
-                                <td>&nbsp;</td>
-                                <td>&nbsp;</td>
-                                <td>&nbsp;</td>
-                            </tr>
-                            <tr th:each="portfolio : ${portfoliosPage.content}">
-                                <td th:text="${portfolio.user.id}"></td>
-                                <td th:text="'$' + ${#numbers.formatDecimal(portfolio.totalCost, 1, 'COMMA', 2, 'POINT')}"></td>
-                                <td th:text="'$' + ${#numbers.formatDecimal(portfolio.totalValue, 1, 'COMMA', 2, 'POINT')}"></td>
-                                <td th:text="${portfolio.totalChangePercent} + '%'"></td>
-                            </tr>
-                            <tr th:if="${portfoliosPage.hasContent()}" th:each="i : ${#numbers.sequence(1, 11 - portfoliosPage.content.size())}">
-                                <td>&nbsp;</td>
-                                <td>&nbsp;</td>
-                                <td>&nbsp;</td>
-                                <td>&nbsp;</td>
-                            </tr>
-                            </tbody>
-                        </table>
+                        <div class="container-fluid px-0">
+                            <table class="table table-hover mb-0 thin-grey-border small-text">
+                                <thead class="text-center custom-table-header">
+                                <tr>
+                                    <th>User ID</th>
+                                    <th>Total Cost</th>
+                                    <th>Total Value</th>
+                                    <th>Total Change (%)</th>
+                                </tr>
+                                </thead>
+                                <tbody class="text-center">
+                                <tr th:if="${!portfoliosPage.hasContent()}">
+                                    <td colspan="4">No portfolios found</td>
+                                </tr>
+                                <tr th:if="${!portfoliosPage.hasContent()}" th:each="i : ${#numbers.sequence(1, 11)}">
+                                    <td>&nbsp;</td>
+                                    <td>&nbsp;</td>
+                                    <td>&nbsp;</td>
+                                    <td>&nbsp;</td>
+                                </tr>
+                                <tr th:each="portfolio : ${portfoliosPage.content}">
+                                    <td th:text="${portfolio.user.id}"></td>
+                                    <td th:text="'$' + ${#numbers.formatDecimal(portfolio.totalCost, 1, 'COMMA', 2, 'POINT')}"></td>
+                                    <td th:text="'$' + ${#numbers.formatDecimal(portfolio.totalValue, 1, 'COMMA', 2, 'POINT')}"></td>
+                                    <td th:text="${#numbers.formatDecimal(portfolio.totalChangePercent, 1, 'COMMA', 2, 'POINT') + '%'}"></td>
+                                </tr>
+                                <tr th:if="${portfoliosPage.hasContent()}"
+                                    th:each="i : ${#numbers.sequence(1, 11 - portfoliosPage.content.size())}">
+                                    <td>&nbsp;</td>
+                                    <td>&nbsp;</td>
+                                    <td>&nbsp;</td>
+                                    <td>&nbsp;</td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <nav aria-label="Page navigation" class="mt-3 px-0">
+                            <ul class="pagination justify-content-start">
+                                <li class="page-item" th:classappend="${portfoliosPage.isEmpty() || portfoliosPage.isFirst() ? 'disabled' : ''}">
+                                    <a class="page-link" th:href="${!portfoliosPage.isEmpty() && !portfoliosPage.isFirst() ? ('/admin?view=portfolios&page=' + (portfoliosPage.number - 1)) : '#'}"
+                                       aria-label="Previous">
+                                        <span aria-hidden="true">&laquo;</span>
+                                    </a>
+                                </li>
+                                <!-- Always show page 1, active if no content or current page is page 1 -->
+                                <li class="page-item" th:classappend="${portfoliosPage.isEmpty() || portfoliosPage.number == 0 ? 'active' : ''}">
+                                    <a class="page-link" th:href="@{/admin(view='portfolios', page=0)}">1</a>
+                                </li>
+                                <!-- Show additional pages only if there are contents and more than one page -->
+                                <li th:if="${!portfoliosPage.isEmpty() && portfoliosPage.totalPages > 1}" th:each="pageNum : ${#numbers.sequence(1, portfoliosPage.totalPages - 1)}"
+                                    th:classappend="${pageNum == portfoliosPage.number ? 'active' : ''}" class="page-item">
+                                    <a th:href="@{/admin(view='portfolios', page=${pageNum})}" class="page-link" th:text="${pageNum + 1}"></a>
+                                </li>
+                                <li class="page-item" th:classappend="${portfoliosPage.isEmpty() || portfoliosPage.isLast() ? 'disabled' : ''}">
+                                    <a class="page-link" th:href="${!portfoliosPage.isEmpty() && !portfoliosPage.isLast() ? ('/admin?view=portfolios&page=' + (portfoliosPage.number + 1)) : '#'}"
+                                       aria-label="Next">
+                                        <span aria-hidden="true">&raquo;</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </nav>
                     </div>
                 </div>
             </div>
@@ -189,16 +217,16 @@
                     <div class="card-header">All Transactions</div>
                     <div class="card-body p-4 pb-2">
                         <!-- Search form -->
-                        <form th:action="@{/admin}" method="get">
-                            <input type="hidden" name="view" value="transactions" />
-                            <div class="row g-3 mb-3">
-                                <div class="col-md-4">
+                        <form th:action="@{/admin}" method="get" class="mb-4">
+                            <input type="hidden" name="view" value="transactions"/>
+                            <div class="row g-2 align-items-end">
+                                <div class="col-md-3">
                                     <input type="text" class="form-control" placeholder="Search ticker" name="ticker" th:value="${ticker}">
                                 </div>
-                                <div class="col-md-4">
+                                <div class="col-md-3">
                                     <input type="number" class="form-control" placeholder="Search User ID" name="userId" th:value="${userId}">
                                 </div>
-                                <div class="col-md-4">
+                                <div class="col-md-3">
                                     <select class="form-select" name="transactionType">
                                         <option value="">Any Type</option>
                                         <option value="Buy" th:selected="${transactionType == 'Buy'}">Buy</option>
@@ -206,9 +234,9 @@
                                         <option value="Edit" th:selected="${transactionType == 'Edit'}">Edit</option>
                                     </select>
                                 </div>
-                            </div>
-                            <div class="d-flex justify-content-end">
-                                <button type="submit" class="btn btn-primary">Search</button>
+                                <div class="col-md-3">
+                                    <button type="submit" class="btn btn-primary">Search</button>
+                                </div>
                             </div>
                         </form>
                         <table class="table table-hover mb-0 thin-grey-border small-text">
@@ -238,7 +266,6 @@
                                 <td>&nbsp;</td>
                                 <td>&nbsp;</td>
                             </tr>
-
                             <tr th:each="transaction : ${transactionsPage.content}">
                                 <td th:text="${transaction.id}"></td>
                                 <td th:text="${transaction.user.id}"></td>
@@ -249,7 +276,8 @@
                                 <td th:text="'$' + ${#numbers.formatDecimal(transaction.totalCost, 1, 'COMMA', 2, 'POINT')}"></td>
                                 <td th:text="${transaction.transactionType}"></td>
                             </tr>
-                            <tr th:if="${transactionsPage.hasContent()}" th:each="i : ${#numbers.sequence(transactionsPage.content.size() + 1, 12)}">
+                            <tr th:if="${transactionsPage.hasContent()}"
+                                th:each="i : ${#numbers.sequence(transactionsPage.content.size() + 1, 12)}">
                                 <td>&nbsp;</td>
                                 <td>&nbsp;</td>
                                 <td>&nbsp;</td>
@@ -261,7 +289,29 @@
                             </tr>
                             </tbody>
                         </table>
-                        <!-- Pagination here -->
+                        <nav aria-label="Page navigation" class="mt-3">
+                            <ul class="pagination justify-content-start">
+                                <li class="page-item" th:classappend="${transactionsPage.isEmpty() || transactionsPage.isFirst() ? 'disabled' : ''}">
+                                    <a class="page-link" th:href="${!transactionsPage.isEmpty() && !transactionsPage.isFirst() ? '/admin?view=transactions&page=' + (transactionsPage.number - 1) : '#'}" aria-label="Previous">
+                                        <span aria-hidden="true">&laquo;</span>
+                                    </a>
+                                </li>
+                                <!-- Always show page 1, active if no content or current page is page 1 -->
+                                <li class="page-item" th:classappend="${transactionsPage.isEmpty() || transactionsPage.number == 0 ? 'active' : ''}">
+                                    <a class="page-link" th:href="@{/admin(view='transactions', page=0)}">1</a>
+                                </li>
+                                <!-- Show additional pages only if there are contents and more than one page -->
+                                <li th:if="${!transactionsPage.isEmpty() && transactionsPage.totalPages > 1}" th:each="pageNum : ${#numbers.sequence(1, transactionsPage.totalPages - 1)}"
+                                    th:classappend="${pageNum == transactionsPage.number ? 'active' : ''}" class="page-item">
+                                    <a th:href="@{/admin(view='transactions', page=${pageNum})}" class="page-link" th:text="${pageNum + 1}"></a>
+                                </li>
+                                <li class="page-item" th:classappend="${transactionsPage.isEmpty() || transactionsPage.isLast() ? 'disabled' : ''}">
+                                    <a class="page-link" th:href="${!transactionsPage.isEmpty() && !transactionsPage.isLast() ? '/admin?view=transactions&page=' + (transactionsPage.number + 1) : '#'}" aria-label="Next">
+                                        <span aria-hidden="true">&raquo;</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </nav>
                     </div>
                 </div>
             </div>
@@ -269,7 +319,8 @@
     </div>
 
     <!-- Deletion confirmation modal -->
-    <div class="modal fade" id="deleteUserModal" tabindex="-1" aria-labelledby="deleteUserModalLabel" aria-hidden="true">
+    <div class="modal fade" id="deleteUserModal" tabindex="-1" aria-labelledby="deleteUserModalLabel"
+         aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -306,7 +357,7 @@
 
             // AJAX for deletion
             deleteUserConfirmButton.onclick = function () {
-                fetch(`/admin/deleteUser/${userId}`, { method: 'DELETE' })
+                fetch(`/admin/deleteUser/${userId}`, {method: 'DELETE'})
                     .then(response => {
                         if (response.ok) {
                             console.log('User deleted');
