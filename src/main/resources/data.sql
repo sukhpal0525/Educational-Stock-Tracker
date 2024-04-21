@@ -1,10 +1,19 @@
-SET FOREIGN_KEY_CHECKS = 1;
+SET FOREIGN_KEY_CHECKS = 0;
 -- TRUNCATE TABLE `User`;
+-- TRUNCATE TABLE `Role`;
+-- TRUNCATE TABLE `User_Roles`;
+-- TRUNCATE TABLE `transactions`;
+-- TRUNCATE TABLE `Portfolio`;
+-- TRUNCATE TABLE `PortfolioItem`;
+-- TRUNCATE TABLE `PortfolioStock`;
+-- TRUNCATE TABLE `learning_content`;
+-- SET FOREIGN_KEY_CHECKS = 1;
 
 INSERT INTO `User` (`UserID`, `isAdmin`, `Username`, `Password`, `balance`) VALUES
 (1, 1, 'admin', '$2a$10$AOYMzvkn8MISJsQR3Q0kXO0ZmFMJXQO6mw7IH/p2PfpJO.zCfrLlK', 10000),
 -- Test User    (Password: test)
 (2, 0, 'test', '$2a$12$yx2YbPbRSvI/1aCJXV7SeOe9y51tIqWtOEhJCm5kSLCDwOCZsSNKO', 10000);
+
 
 --Insert stocks into the PortfolioStock table
 INSERT INTO PortfolioStock (ticker, name, currentPrice, sector, fiftyTwoWeekHigh, fiftyTwoWeekLow, regularMarketChangePercent) VALUES
@@ -20,20 +29,6 @@ INSERT INTO PortfolioStock (ticker, name, currentPrice, sector, fiftyTwoWeekHigh
     ('GS', 'Goldman Sachs Group Inc.', 330.00, 'Financials', 390.00, 300.00, 2.50),
     ('PG', 'Procter & Gamble Co.', 130.00, 'Consumer Goods', 145.00, 120.00, 1.75),
     ('KO', 'Coca-Cola Co.', 50.00, 'Consumer Goods', 60.00, 45.00, 2.25);
--- INSERT INTO PortfolioStock (ticker, name, currentPrice, sector, fiftyTwoWeekHigh, fiftyTwoWeekLow, regularMarketChangePercent) VALUES
---     ('AAPL', 'Apple Inc.', 150.00, 'Technology', 180.00, 130.00, 5.00),
---     ('MSFT', 'Microsoft Corp.', 280.00, 'Technology', 320.00, 240.00, 4.50),
---     ('GOOGL', 'Alphabet Inc.', 120.00, 'Technology', 150.00, 100.00, 6.00),
---     ('PFE', 'Pfizer Inc.', 45.00, 'Healthcare', 55.00, 35.00, 3.50),
---     ('JNJ', 'Johnson & Johnson', 170.00, 'Healthcare', 190.00, 150.00, 2.50),
---     ('JPM', 'JPMorgan Chase & Co.', 130.00, 'Financial', 160.00, 100.00, 4.00),
---     ('GS', 'Goldman Sachs Group Inc.', 320.00, 'Financial', 400.00, 250.00, 3.00),
---     ('KO', 'Coca-Cola Co.', 60.00, 'Consumer Goods', 65.00, 50.00, 1.75),
---     ('PG', 'Procter & Gamble Co.', 150.00, 'Consumer Goods', 170.00, 130.00, 2.00),
---     ('XOM', 'Exxon Mobil Corp.', 90.00, 'Energy', 100.00, 60.00, 5.50),
---     ('CVX', 'Chevron Corp.', 115.00, 'Energy', 130.00, 90.00, 4.25),
---     ('BA', 'Boeing Co.', 200.00, 'Industrials', 250.00, 180.00, -2.00),
---     ('MMM', '3M Co.', 150.00, 'Industrials', 180.00, 120.00, -1.00);
 
 -- Insert a portfolio for the user
 INSERT INTO Portfolio (user_id, totalCost, totalValue, totalChangePercent)
@@ -48,7 +43,6 @@ SET @total_cost = 2 * 173.31;
 -- Update `User` balance, subtracting the @total_cost from user's balance
 UPDATE `User` SET balance = balance - 7950 WHERE UserID = 2;
 -- UPDATE `User` SET balance = balance - @total_cost WHERE UserID = 2;
-
 
 -- Insert a PortfolioItem that references the user's portfolio and the stock
 INSERT INTO PortfolioItem (portfolio_id, stock_ticker, quantity, purchasePrice, isEditing) VALUES
@@ -65,56 +59,19 @@ INSERT INTO PortfolioItem (portfolio_id, stock_ticker, quantity, purchasePrice, 
     (@portfolio_id, 'PG', 8, 125, 0),
     (@portfolio_id, 'KO', 25, 48, 0);
 
-
--- INSERT INTO PortfolioItem (portfolio_id, stock_ticker, quantity, purchasePrice, isEditing) VALUES
---     (@portfolio_id, 'AAPL', 5, 173.31, 0),
---     (@portfolio_id, 'MSFT', 3, 280.00, 0),
---     (@portfolio_id, 'GOOGL', 2, 120.00, 0),
---     (@portfolio_id, 'PFE', 5, 45.00, 0),
---     (@portfolio_id, 'JNJ', 4, 170.00, 0),
---     (@portfolio_id, 'JPM', 6, 130.00, 0),
---     (@portfolio_id, 'GS', 2, 320.00, 0),
---     (@portfolio_id, 'KO', 7, 60.00, 0),
---     (@portfolio_id, 'PG', 2, 150.00, 0),
---     (@portfolio_id, 'XOM', 4, 90.00, 0),
---     (@portfolio_id, 'CVX', 3, 115.00, 0),
---     (@portfolio_id, 'BA', 2, 200.00, 0),
---     (@portfolio_id, 'MMM', 5, 150.00, 0);
-
 INSERT INTO `transactions` (`user_id`, `dateTime`, `stockTicker`, `quantity`, `purchasePrice`, `totalCost`, `transactionType`) VALUES
-    (2, NOW(), 'AAPL', 10, 140, 1400, 'Buy'),
-    (2, NOW(), 'AAPL', 10, 140, 1400, 'Buy'),
-    (2, NOW(), 'AAPL', 10, 140, 1400, 'Buy'),
-    (2, NOW(), 'AAPL', 10, 140, 1400, 'Buy'),
-
-    (2, NOW(), 'MSFT', 5, 240, 1200, 'Buy'),
-    (2, NOW(), 'AMZN', 1, 3000, 3000, 'Buy'),
-    (2, NOW(), 'TSLA', 3, 680, 2040, 'Buy'),
-    (2, NOW(), 'JNJ', 7, 155, 1085, 'Buy'),
-    (2, NOW(), 'PFE', 15, 38, 570, 'Buy'),
-    (2, NOW(), 'XOM', 20, 58, 1160, 'Buy'),
-    (2, NOW(), 'CVX', 6, 115, 690, 'Buy'),
-    (2, NOW(), 'JPM', 12, 105, 1260, 'Buy'),
-    (2, NOW(), 'GS', 4, 320, 1280, 'Buy'),
-    (2, NOW(), 'PG', 8, 125, 1000, 'Buy'),
-    (2, NOW(), 'KO', 25, 48, 1200, 'Buy');
-
-
--- INSERT INTO `transactions` (`user_id`, `dateTime`, `stockTicker`, `quantity`, `purchasePrice`, `totalCost`, `transactionType`) VALUES
---     (2, NOW(), 'AAPL', 5, 150.00, 1500.00, 'Buy'),
---     (2, NOW(), 'MSFT', 5, 280.00, 1400.00, 'Buy'),
---     (2, NOW(), 'GOOGL', 8, 120.00, 960.00, 'Buy'),
---     (2, NOW(), 'PFE', 15, 45.00, 675.00, 'Buy'),
---     (2, NOW(), 'JNJ', 12, 170.00, 2040.00, 'Buy'),
---     (2, NOW(), 'JPM', 20, 130.00, 2600.00, 'Buy'),
---     (2, NOW(), 'GS', 7, 320.00, 2240.00, 'Buy'),
---     (2, NOW(), 'KO', 25, 60.00, 1500.00, 'Buy'),
---     (2, NOW(), 'PG', 10, 150.00, 1500.00, 'Buy'),
---     (2, NOW(), 'XOM', 18, 90.00, 1620.00, 'Buy'),
---     (2, NOW(), 'CVX', 14, 115.00, 1610.00, 'Buy'),
---     (2, NOW(), 'BA', 9, 200.00, 1800.00, 'Sell');
-
---SET FOREIGN_KEY_CHECKS = 1;
+    (2, NOW(), 'AAPL', 5, 150.00, 1500.00, 'Buy'),
+    (2, NOW(), 'MSFT', 5, 280.00, 1400.00, 'Buy'),
+    (2, NOW(), 'GOOGL', 8, 120.00, 960.00, 'Buy'),
+    (2, NOW(), 'PFE', 15, 45.00, 675.00, 'Buy'),
+    (2, NOW(), 'JNJ', 12, 170.00, 2040.00, 'Buy'),
+    (2, NOW(), 'JPM', 20, 130.00, 2600.00, 'Buy'),
+    (2, NOW(), 'GS', 7, 320.00, 2240.00, 'Buy'),
+    (2, NOW(), 'KO', 25, 60.00, 1500.00, 'Buy'),
+    (2, NOW(), 'PG', 10, 150.00, 1500.00, 'Buy'),
+    (2, NOW(), 'XOM', 18, 90.00, 1620.00, 'Buy'),
+    (2, NOW(), 'CVX', 14, 115.00, 1610.00, 'Buy'),
+    (2, NOW(), 'BA', 9, 200.00, 1800.00, 'Sell');
 
 INSERT INTO learning_content (title, category, summary, detail) VALUES
     ('Basics of Investing', 'Investing-Basics', 'Start your investment journey by understanding the basics.', '<h5>Investment Types:</h5><ul><li><strong>Stocks:</strong> Investments that offer a share in the company’s profits.</li><li><strong>Bonds:</strong> Fixed investments that are considered less risky than stocks.</li><li><strong>Mutual Funds:</strong> Pooled money from many investors to invest in a diversified portfolio of stocks and bonds.</li><li><strong>ETFs:</strong> Exchange-traded funds that are similar to mutual funds but traded like individual stocks.</ul><p>Understanding your <strong>risk tolerance</strong> and setting <strong>clear financial goals</strong> are key to developing a diversified portfolio that aligns with your investment objectives.</p>'),
