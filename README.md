@@ -2,10 +2,9 @@ Example User Login Details:
 - Username: test
 - Password: test
 
-
 **1) Initial Project Setup**
 - Install and run Intellij IDEA (Community or Ultimate).
-- Extract Portfolio_Tracker.zip. Open it in Intellij IDEA.
+- Extract portfolio-tracker.zip and open it in Intellij IDEA. Open the 2nd folder. https://gyazo.com/1593e14860b58bf69a2265dcb4ee366b
 - Download JDK 17 in Intellij IDEA.
 - Click "Setup SDK" -> "Download JDK". (https://gyazo.com/048de35a8993e6e2b68ab63bae533976)
 - Select these settings: https://gyazo.com/03687cdaf3539c86b70a8e483e1c14ec
