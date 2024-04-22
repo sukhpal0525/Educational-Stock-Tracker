@@ -254,17 +254,20 @@
                 <nav aria-label="Page navigation" class="text-end pe-4">
                     <ul class="pagination pagination-sm justify-content-end mb-4">
                         <!-- Previous Page Link -->
-                        <li class="page-item" th:classappend="${transactions.isEmpty() ? 'disabled' : ''}">
+                        <li class="page-item" th:classappend="${transactions.isEmpty() || transactions.isFirst() ? 'disabled' : ''}">
                             <a class="page-link" th:href="@{/stocks/{symbol}(symbol=${stockData.ticker}, page=${transactions.number - 1}, size=${transactions.size})}" aria-label="Previous">
                                 <span aria-hidden="true">&laquo;</span>
                             </a>
                         </li>
-
-                        <!-- Page Numbers; Only show if totalPages > 0 -->
-                        <li th:if="${transactions.totalPages > 0}" th:each="pageNum : ${#numbers.sequence(0, transactions.totalPages - 1)}" class="page-item" th:classappend="${pageNum == transactions.number ? 'active' : ''}">
-                            <a class="page-link" th:href="@{/stocks/{symbol}(symbol=${stockData.ticker}, page=${pageNum}, size=${transactions.size})}" th:text="${pageNum + 1}"></a>
+                        <!-- Always show page 1, active if no content or current page is page 1 -->
+                        <li class="page-item" th:classappend="${transactions.isEmpty() || transactions.number == 0 ? 'active' : ''}">
+                            <a class="page-link" th:href="@{/stocks/{symbol}(symbol=${stockData.ticker}, page=0, size=${transactions.size})}">1</a>
                         </li>
-
+                        <!-- Show additional pages only if there are contents and more than one page -->
+                        <li th:if="${!transactions.isEmpty() && transactions.totalPages > 1}" th:each="pageNum : ${#numbers.sequence(1, transactions.totalPages - 1)}"
+                            th:classappend="${pageNum == transactions.number ? 'active' : ''}" class="page-item">
+                            <a th:href="@{/stocks/{symbol}(symbol=${stockData.ticker}, page=${pageNum}, size=${transactions.size})}" class="page-link" th:text="${pageNum + 1}"></a>
+                        </li>
                         <!-- Next Page Link -->
                         <li class="page-item" th:classappend="${transactions.isEmpty() || transactions.isLast() ? 'disabled' : ''}">
                             <a class="page-link" th:href="@{/stocks/{symbol}(symbol=${stockData.ticker}, page=${transactions.number + 1}, size=${transactions.size})}" aria-label="Next">

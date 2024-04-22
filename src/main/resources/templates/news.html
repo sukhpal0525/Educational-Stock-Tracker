@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Portfolio News</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/5.1.3/css/bootstrap.min.css">
+</head>
+<body>
+<div class="container mt-3">
+    <h2>Your Portfolio News</h2>
+    <div th:if="${newsByTicker.isEmpty()}">
+        <p>No news available for your stocks.</p>
+    </div>
+    <div class="row">
+        <!-- Iterate over each stock ticker in the map -->
+        <div th:each="ticker, newsList : ${newsByTicker}" class="col-md-4 mb-3">
+            <h3 th:text="${ticker}"></h3>
+            <!-- Iterate over the list of news for the current ticker -->
+            <div th:each="news : ${newsList}" class="card">
+                <div class="card-body">
+                    <h5 class="card-title" th:text="${news.title}">Title</h5>
+                    <p class="card-text" th:text="${news.description}">Description</p>
+                    <p class="card-text"><small class="text-muted" th:text="${news.pubDate}">Publication Date</small></p>
+                    <a th:href="${news.link}" class="btn btn-primary" target="_blank">Read more</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://code.jquery.com/jquery-3.6.0.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.1/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/5.1.3/js/bootstrap.min.js"></script>
+</body>
+</html>

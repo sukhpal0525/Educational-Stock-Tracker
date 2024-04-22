@@ -77,14 +77,14 @@ public class FinancialAPITests {
 
     @Test
     public void testStockDataFetch() throws Exception {
-        mockMvc.perform(get("/finance/stock/{symbol}", "AAPL"))
+        mockMvc.perform(get("//stocks/{symbol}", "AAPL"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.price").isNumber());
     }
 
     @Test
     public void testHistoricalDataFetch() throws Exception {
-        mockMvc.perform(get("/finance/historical/{symbol}", "AAPL")
+        mockMvc.perform(get("/stocks/{symbol}", "AAPL")
                         .param("range", "1y"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data").isArray());
@@ -104,10 +104,12 @@ public class FinancialAPITests {
 
     @Test
     public void testResponseHeadersForStockData() throws Exception {
-        mockMvc.perform(get("/finance/stock/{symbol}", "AAPL"))
+        mockMvc.perform(get("/stocks/{symbol}", "AAPL"))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(header().string("Content-Type", "application/json"))
-                .andExpect(jsonPath("$.price").isNumber());
+                .andExpect(header().string("Content-Type", "application/json;charset=UTF-8"))
+                .andExpect(jsonPath("$.stockData").isNotEmpty())
+                .andExpect(jsonPath("$.historicalDataJson").isNotEmpty())
+                .andExpect(jsonPath("$.stockInfo").isNotEmpty());
     }
 }

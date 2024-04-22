@@ -168,12 +168,11 @@ public class PortfolioService {
 
         PortfolioStock portfolioStock = new PortfolioStock();
 
+        // Set all fields
         portfolioStock.setTicker(yahooStockData.getTicker());
         portfolioStock.setName(yahooStockData.getName());
         portfolioStock.setCurrentPrice(yahooStockData.getPrice().doubleValue());
         portfolioStock.setSector(yahooStockInfo.getSector());
-
-        // Set the new fields
         portfolioStock.setFiftyTwoWeekHigh(BigDecimal.valueOf(yahooStockData.getFiftyTwoWeekHigh()));
         portfolioStock.setFiftyTwoWeekLow(BigDecimal.valueOf(yahooStockData.getFiftyTwoWeekLow()));
         portfolioStock.setRegularMarketChangePercent(yahooStockData.getRegularMarketChangePercent());
@@ -247,9 +246,7 @@ public class PortfolioService {
         }
 
         Portfolio portfolio = portfolioRepository.findByUserId(userId).orElseGet(() -> createPortfolio(userId));
-        Optional<PortfolioItem> existingItemOptional = portfolio.getItems().stream()
-                .filter(item -> item.getStock().getTicker().equals(symbol))
-                .findFirst();
+        Optional<PortfolioItem> existingItemOptional = portfolio.getItems().stream().filter(item -> item.getStock().getTicker().equals(symbol)).findFirst();
 
         if (isBuying) {
             PortfolioItem portfolioItem = existingItemOptional.orElseGet(() -> {
@@ -434,18 +431,14 @@ public class PortfolioService {
 //                BigDecimal stockVolatility = calculateStockVolatility(stockData);
 //                portfolioVolatility = portfolioVolatility.add(stockVolatility.multiply(BigDecimal.valueOf(item.getQuantity())));
 //            }
-//            // Normalize or adjust the volatility measure as necessary
 //            portfolioVolatility = portfolioVolatility.divide(BigDecimal.valueOf(portfolio.getItems().size()), 2, RoundingMode.HALF_UP);
 //        } else {
-//            // Optionally return a default value or zero if no items in portfolio
 //            portfolioVolatility = BigDecimal.ZERO;
 //        }
-//
 //        return portfolioVolatility;
 //    }
 //
 //    public BigDecimal calculateStockVolatility(YahooStock stockData) {
-//        // Using the 'price' field as a proxy for regular market price
 //        BigDecimal dailyVolatility = stockData.getRegularMarketChangePercent();
 //
 //        // Calculate the range of price change over the last 52 weeks as a simple volatility measure

@@ -28,6 +28,24 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
+            .csrf().disable()
+            .authorizeRequests()
+            .antMatchers("/", "/login", "/register", "/css/**", "/js/**", "/icons/**").permitAll()
+            .antMatchers(HttpMethod.POST, "/portfolio/add").authenticated() // Only authenticate POST requests to /portfolio/add
+            .anyRequest().permitAll() // All other requests are permitted without authentication
+            .and()
+            .formLogin()
+            .loginPage("/login")
+            .permitAll()
+            .and()
+            .logout()
+            .permitAll();
+
+        return http.build();
+    }
+
+
+
 // Disable auth
 //            .authorizeRequests()
 //                .antMatchers("/", "/login", "/register").permitAll()
@@ -59,19 +77,4 @@ public class SecurityConfig {
 //                .logout()
 //                .permitAll();
 
-                    .csrf().disable()
-                    .authorizeRequests()
-                    .antMatchers("/", "/login", "/register", "/css/**", "/js/**", "/icons/**").permitAll()
-                    .antMatchers(HttpMethod.POST, "/portfolio/add").authenticated() // Only authenticate POST requests to /portfolio/add
-                    .anyRequest().permitAll() // All other requests are permitted without authentication
-                    .and()
-                    .formLogin()
-                    .loginPage("/login")
-                    .permitAll()
-                    .and()
-                    .logout()
-                    .permitAll();
-
-            return http.build();
-        }
 }

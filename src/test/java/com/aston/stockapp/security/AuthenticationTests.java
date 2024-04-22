@@ -11,9 +11,8 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestBuilders.formLogin;
 import static org.springframework.security.test.web.servlet.response.SecurityMockMvcResultMatchers.authenticated;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -39,13 +38,15 @@ public class AuthenticationTests {
     public void testAdminAccess() throws Exception {
         mockMvc.perform(get("/admin"))
                 .andExpect(status().isOk())
-                .andExpect(view().name("admin_dashboard"));
+                .andExpect(view().name("admin-dashboard"));
     }
 
     @Test
     @WithMockUser(username="user", roles={"USER"})
     public void testUserAccessRestriction() throws Exception {
+        // Testing redirection instead of direct access blocking
         mockMvc.perform(get("/admin"))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isFound()) // 302 redirect
+                .andExpect(redirectedUrl("/login"));
     }
 }

@@ -43,7 +43,7 @@ public class LearnController {
 
         model.addAttribute("contentList", filteredContent);
         model.addAttribute("categoryCounts", categoryCounts);
-        model.addAttribute("filterCategory", category); // To highlight the selected category in the UI
+        model.addAttribute("filterCategory", category);
         return "learn";
     }
 }

@@ -46,4 +46,8 @@ public class User {
 
     @JsonDeserialize(using = PasswordEncoderDeserializer.class)
     public void setPassword(String password) { this.password = password; }
+
+    public void setIsAdmin(boolean isAdmin) {
+        this.isAdmin = isAdmin;
+    }
 }

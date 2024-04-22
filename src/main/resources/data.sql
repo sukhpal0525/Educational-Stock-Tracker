@@ -1,13 +1,13 @@
 SET FOREIGN_KEY_CHECKS = 0;
--- TRUNCATE TABLE `User`;
--- TRUNCATE TABLE `Role`;
--- TRUNCATE TABLE `User_Roles`;
--- TRUNCATE TABLE `transactions`;
--- TRUNCATE TABLE `Portfolio`;
--- TRUNCATE TABLE `PortfolioItem`;
--- TRUNCATE TABLE `PortfolioStock`;
--- TRUNCATE TABLE `learning_content`;
--- SET FOREIGN_KEY_CHECKS = 1;
+TRUNCATE TABLE `User`;
+TRUNCATE TABLE `Role`;
+TRUNCATE TABLE `User_Roles`;
+TRUNCATE TABLE `transactions`;
+TRUNCATE TABLE `Portfolio`;
+TRUNCATE TABLE `PortfolioItem`;
+TRUNCATE TABLE `PortfolioStock`;
+TRUNCATE TABLE `learning_content`;
+SET FOREIGN_KEY_CHECKS = 1;
 
 INSERT INTO `User` (`UserID`, `isAdmin`, `Username`, `Password`, `balance`) VALUES
 (1, 1, 'admin', '$2a$10$AOYMzvkn8MISJsQR3Q0kXO0ZmFMJXQO6mw7IH/p2PfpJO.zCfrLlK', 10000),
@@ -60,7 +60,6 @@ INSERT INTO PortfolioItem (portfolio_id, stock_ticker, quantity, purchasePrice, 
     (@portfolio_id, 'KO', 25, 48, 0);
 
 INSERT INTO `transactions` (`user_id`, `dateTime`, `stockTicker`, `quantity`, `purchasePrice`, `totalCost`, `transactionType`) VALUES
-    (2, NOW(), 'AAPL', 5, 150.00, 1500.00, 'Buy'),
     (2, NOW(), 'MSFT', 5, 280.00, 1400.00, 'Buy'),
     (2, NOW(), 'GOOGL', 8, 120.00, 960.00, 'Buy'),
     (2, NOW(), 'PFE', 15, 45.00, 675.00, 'Buy'),
@@ -71,6 +70,18 @@ INSERT INTO `transactions` (`user_id`, `dateTime`, `stockTicker`, `quantity`, `p
     (2, NOW(), 'PG', 10, 150.00, 1500.00, 'Buy'),
     (2, NOW(), 'XOM', 18, 90.00, 1620.00, 'Buy'),
     (2, NOW(), 'CVX', 14, 115.00, 1610.00, 'Buy'),
+
+    (2, NOW(), 'AAPL', 5, 150.00, 1500.00, 'Buy'),
+    (2, NOW(), 'AAPL', 5, 150.00, 1500.00, 'Buy'),
+    (2, NOW(), 'AAPL', 5, 150.00, 1500.00, 'Buy'),
+    (2, NOW(), 'AAPL', 5, 150.00, 1500.00, 'Buy'),
+    (2, NOW(), 'AAPL', 5, 150.00, 1500.00, 'Buy'),
+    (2, NOW(), 'AAPL', 5, 150.00, 1500.00, 'Buy'),
+    (2, NOW(), 'AAPL', 5, 150.00, 1500.00, 'Buy'),
+    (2, NOW(), 'AAPL', 5, 150.00, 1500.00, 'Buy'),
+    (2, NOW(), 'AAPL', 5, 150.00, 1500.00, 'Buy'),
+    (2, NOW(), 'AAPL', 5, 150.00, 1500.00, 'Buy'),
+    (2, NOW(), 'AAPL', 5, 150.00, 1500.00, 'Buy'),
     (2, NOW(), 'BA', 9, 200.00, 1800.00, 'Sell');
 
 INSERT INTO learning_content (title, category, summary, detail) VALUES
