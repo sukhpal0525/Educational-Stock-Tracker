@@ -1,3 +1,8 @@
+Example User Login Details:
+- Username: test
+- Password: test
+
+
 **1) Initial Project Setup**
 - Install and run Intellij IDEA (Community or Ultimate).
 - Extract Portfolio_Tracker.zip. Open it in Intellij IDEA.
