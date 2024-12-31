@@ -185,7 +185,8 @@
                             </td>
                             <td class="align-middle text-center">
                                 <span th:if="${editingItemId != item.id}" th:text="${#numbers.formatDecimal(item.purchasePrice, 1, 'COMMA', 2, 'POINT')}"></span>
-                                <input class="form-control form-control-sm" style="text-align: center;" th:if="${editingItemId == item.id}" type="number" th:value="${item.purchasePrice}" th:name="newPurchasePrice" form="saveForm-${item.id}" step="0.01" required min="0.01"/>
+                                                                <input class="form-control form-control-sm" style="text-align: center;" th:if="${editingItemId == item.id}" type="number" th:value="${item.purchasePrice}" th:name="newPurchasePrice" form="saveForm-${item.id}" step="0.01" required min="0.01"/>
+
                             </td>
                             <td class="align-middle text-center" th:text="${#numbers.formatDecimal(item.quantity * item.purchasePrice, 1, 'COMMA', 2, 'POINT')}"></td>
                             <td class="align-middle text-center" th:text="${#numbers.formatDecimal(item.quantity * item.stock.currentPrice, 1, 'COMMA', 2, 'POINT')}"></td>
