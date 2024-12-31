@@ -63,6 +63,8 @@
             display: flex;
             flex-direction: column;
             overflow: hidden;
+            padding-left: 0;
+            padding-right: 0;
         }
         .portfolio-analysis-header {
             flex-shrink: 0;
@@ -338,8 +340,8 @@
         chartColors = ['#008FFB', '#00E396', '#FEB019', '#FF4560', '#775DD0', '#546E7A', '#26a69a', '#D10CE8'];
     } else {
         sectors = ['No Data'];
-        percentages = [100]; // Show 100% of "No Data"
-        chartColors = ['#A9A9A9']; // Grey (No Data)
+        percentages = [100];
+        chartColors = ['#A9A9A9'];
     }
 
     const options = {
